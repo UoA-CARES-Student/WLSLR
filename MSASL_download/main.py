@@ -18,7 +18,7 @@ def download_set(file, classes):
     f = open(file)
     dataset = json.load(f)
     for data in dataset:
-        if data['label'] > int(classes):
+        if data['label'] < int(classes):
             complete = False
             while not complete:
                 try:
@@ -52,20 +52,26 @@ def download_set(file, classes):
                     complete = True
                     num_videos += 1
                     skipped_videos += 1
+                except pytube.exceptions.PytubeError:
+                    print('Some unknown error occurred. Skipping...')
+                    complete = True
+                    num_videos += 1
+                    skipped_videos += 1
     return [num_videos, skipped_videos]
 
 
 if __name__ == '__main__':
-    num_classes = input("How many classes? ")
+    subsets = [1000, 200, 100]
 
-    num_vids = download_set('MS-ASL/MSASL_train.json', num_classes)
-    print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
-          .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
+    for subset in subsets:
+        num_vids = download_set('MS-ASL/MSASL_train.json', subset)
+        print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
+              .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
 
-    num_vids = download_set('MS-ASL/MSASL_test.json', num_classes)
-    print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
-          .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
+        num_vids = download_set('MS-ASL/MSASL_test.json', subset)
+        print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
+              .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
 
-    num_vids = download_set('MS-ASL/MSASL_val.json', num_classes)
-    print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
-          .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
+        num_vids = download_set('MS-ASL/MSASL_val.json', subset)
+        print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
+              .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
