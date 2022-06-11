@@ -31,7 +31,9 @@ def download_set(file, classes):
                     print("Now downloading {}".format(data['url']))
                     YouTube(data['url']).streams \
                         .get_highest_resolution() \
-                        .download(output_path=dir_name, filename="{}_{}".format(data['clean_text'], index))
+                        .download(output_path=dir_name,
+                                  filename="{}_{}".format(data['clean_text'], index),
+                                  max_retries=10)
                     num_videos += 1
                     print("Done!")
                     complete = True
@@ -45,8 +47,11 @@ def download_set(file, classes):
                 except urllib.error.URLError:
                     print("Network error. Retrying...")
                     complete = False
-
-
+                except pytube.exceptions.MaxRetriesExceeded:
+                    print('Max retries exceeded. Skipping...')
+                    complete = True
+                    num_videos += 1
+                    skipped_videos += 1
     return [num_videos, skipped_videos]
 
 
