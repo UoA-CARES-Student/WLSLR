@@ -1,2 +1,5 @@
 # ignore the downloaded raw files
 MS-ASL-*
+
+# ignore idea files
+.idea
