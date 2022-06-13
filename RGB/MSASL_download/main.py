@@ -61,17 +61,17 @@ def download_set(file, classes):
 
 
 if __name__ == '__main__':
-    subsets = [100, 200, 1000]
+    subsets = [100, 500, 1000]
 
     for subset in subsets:
-        num_vids = download_set('MS-ASL/MSASL_train.json', subset)
+        num_vids = download_set('C:\\git_repos\\WLSLR\\MSASL_download\\MS-ASL\\MSASL_train.json', subset)
         print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
               .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
 
-        num_vids = download_set('MS-ASL/MSASL_test.json', subset)
+        num_vids = download_set('C:\\git_repos\\WLSLR\\MSASL_download\\MS-ASL\\MSASL_test.json', subset)
         print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
               .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
 
-        num_vids = download_set('MS-ASL/MSASL_val.json', subset)
+        num_vids = download_set('C:\\git_repos\\WLSLR\\MSASL_download\\MS-ASL\\MSASL_val.json', subset)
         print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
               .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
