@@ -61,7 +61,7 @@ def download_set(file, classes):
 
 
 if __name__ == '__main__':
-    subsets = [100, 500, 1000]
+    subsets = [100]
 
     for subset in subsets:
         num_vids = download_set('MS-ASL/MSASL_train.json', subset)

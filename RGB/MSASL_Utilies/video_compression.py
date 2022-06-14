@@ -9,7 +9,7 @@ def compress_video(video_full_path, size_upper_bound, two_pass=True, filename_su
     :param two_pass: Set to True to enable two-pass calculation.
     :param filename_suffix: Add a suffix for new video.
     :return: out_put_name or error
-    
+
     Reference: https://gist.github.com/ESWZY/a420a308d3118f21274a0bc3a6feb1ff
     """
     filename, extension = os.path.splitext(video_full_path)
@@ -82,5 +82,5 @@ def compress_video(video_full_path, size_upper_bound, two_pass=True, filename_su
         return False
 
 if __name__ == '__main__':
-    file_name = compress_video('acquire_0', 300 * 1000)
+    file_name = compress_video('MS-ASL-100/train/black_0', 5 * 1000)
     print(file_name)
