@@ -1,7 +1,14 @@
 import os
-import ffmpeg
 
-def compress_video(video_full_path, size_upper_bound, two_pass=True, filename_suffix='copy'):
+import ffmpeg
+from moviepy.config import FFMPEG_BINARY
+from moviepy.tools import subprocess_call
+
+def compress_video(
+    video_full_path: str, 
+    size_upper_bound: int, 
+    two_pass=True, 
+    filename_suffix='copy'):
     """
     Compress video file to max-supported size.
     Args:
@@ -10,8 +17,7 @@ def compress_video(video_full_path, size_upper_bound, two_pass=True, filename_su
         two_pass: Set to True to enable two-pass calculation.
         filename_suffix: Add a suffix for new video.
     Return:
-        output file name if compression successfully,
-        or False if unsuccessful.
+        output file name if compression successfully or False if unsuccessful.
     Side-effects:
         Creates a compressed copy of the video file and then deletes the orginal.
 
@@ -70,13 +76,13 @@ def compress_video(video_full_path, size_upper_bound, two_pass=True, filename_su
             # Replace old video with newly compressed video
             os.remove(video_full_path)
             os.rename(output_file_name, filename + extension)
-            output_file_name = file_name + extension
+            output_file_name = filename + extension
             return output_file_name
         elif os.path.getsize(output_file_name) < os.path.getsize(video_full_path):  # Do it again
             # Replace old video with newly compressed video
             os.remove(video_full_path)
             os.rename(output_file_name, filename + extension)
-            output_file_name = file_name + extension
+            output_file_name = filename + extension
             return compress_video(output_file_name, size_upper_bound)
         else:
             return False
@@ -86,6 +92,42 @@ def compress_video(video_full_path, size_upper_bound, two_pass=True, filename_su
         print('You can install ffmpeg by reading https://github.com/kkroening/ffmpeg-python/issues/251')
         return False
 
-if __name__ == '__main__':
-    file_name = compress_video('MS-ASL-100/train/book_1', 200)
-    print(file_name)
+
+def extract_video_subclip(
+    inputfile: str,
+    start_time: float,
+    end_time: float, 
+    outputfile: str, 
+    logger="bar"
+):
+    """
+    Makes a new video file playing video file between two times.
+    Args:
+        inputfile: Path to the file from which the subclip will be extracted.
+        start_time: Moment of the input clip that marks the start of the produced subclip (seconds).
+        end_time: Moment of the input clip that marks the end of the produced subclip (seconds).
+        outputfile: Path to the output file (e.g. "../video_name.mp4").
+    Returns:
+        Saves a subclip of the orginal video at the output location.
+
+    Reference: https://github.com/Zulko/moviepy/blob/master/moviepy/video/io/ffmpeg_tools.py#L27
+    """
+    cmd = [
+        FFMPEG_BINARY,
+        "-y",
+        "-ss",
+        "%0.2f" % start_time,
+        "-i",
+        inputfile,
+        "-t",
+        "%0.2f" % (end_time - start_time),
+        "-map",
+        "0",
+        "-vcodec",
+        "copy",
+        "-acodec",
+        "copy",
+        "-copyts",
+        outputfile,
+    ]
+    subprocess_call(cmd, logger=logger)
