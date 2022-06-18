@@ -6,14 +6,21 @@ from moviepy.tools import subprocess_call
 
 def compress_video(
     video_full_path: str, 
-    size_upper_bound: int, 
+    size_upper_bound: int,
+    total_bitrate_lower_bound=11000,
+    audio_bitrate=0,
+    min_video_bitrate=100000,
     two_pass=True, 
     filename_suffix='copy'):
     """
     Compress video file to max-supported size.
+
     Args:
         video_full_path: the video you want to compress.
         size_upper_bound: Max video size in KB.
+        total_bitrate_lower_bound: Lower bound of (video + audio) bitrate.
+        audio_bitrate: The audio bitrate.
+        min_video_bitrate: Minimum video bitrate.
         two_pass: Set to True to enable two-pass calculation.
         filename_suffix: Add a suffix for new video.
     Return:
@@ -26,10 +33,6 @@ def compress_video(
     filename, extension = os.path.splitext(video_full_path)
     extension = '.mp4'
     output_file_name = filename + filename_suffix + extension
-
-    total_bitrate_lower_bound = 11000
-    audio_bitrate = 0
-    min_video_bitrate = 100000
 
     try:
         # Bitrate reference: https://en.wikipedia.org/wiki/Bit_rate#Encoding_bit_rate
@@ -98,10 +101,10 @@ def extract_video_subclip(
     start_time: float,
     end_time: float, 
     outputfile: str, 
-    logger="bar"
-):
+    logger="bar"):
     """
     Makes a new video file playing video file between two times.
+
     Args:
         inputfile: Path to the file from which the subclip will be extracted.
         start_time: Moment of the input clip that marks the start of the produced subclip (seconds).
