@@ -1,6 +1,8 @@
+import http.client
 import json
 import os
 import urllib.error
+import video_utilities
 
 import pytube.exceptions
 from pytube import YouTube
@@ -27,13 +29,20 @@ def download_set(file, classes):
                         for file in files:
                             if data['clean_text'] in file:
                                 index += 1
+                    file_name = "{}_{}".format(data['clean_text'], index)
 
                     print("Now downloading {}".format(data['url']))
                     YouTube(data['url']).streams \
                         .get_highest_resolution() \
                         .download(output_path=dir_name,
-                                  filename="{}_{}".format(data['clean_text'], index),
+                                  filename=file_name + "_init",
                                   max_retries=10)
+                    video_utilities.extract_video_subclip(os.path.join(dir_name, file_name) + "_init",
+                                                          data['start_time'],
+                                                          data['end_time'],
+                                                          os.path.join(dir_name, file_name) + ".mp4")
+                    os.remove(os.path.join(dir_name, file_name) + "_init")
+                    # video_utilies.compress_video(os.path.join(dir_name, file_name), 10)
                     num_videos += 1
                     print("Done!")
                     complete = True
@@ -44,7 +53,7 @@ def download_set(file, classes):
                     complete = True
                     num_videos += 1
                     skipped_videos += 1
-                except urllib.error.URLError:
+                except (urllib.error.URLError, http.client.IncompleteRead):
                     print("Network error. Retrying...")
                     complete = False
                 except pytube.exceptions.MaxRetriesExceeded:

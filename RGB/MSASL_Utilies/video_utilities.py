@@ -4,14 +4,15 @@ import ffmpeg
 from moviepy.config import FFMPEG_BINARY
 from moviepy.tools import subprocess_call
 
+
 def compress_video(
-    video_full_path: str, 
-    size_upper_bound: int,
-    total_bitrate_lower_bound=11000,
-    audio_bitrate=0,
-    min_video_bitrate=100000,
-    two_pass=True, 
-    filename_suffix='copy'):
+        video_full_path: str,
+        size_upper_bound: int,
+        total_bitrate_lower_bound=11000,
+        audio_bitrate=0,
+        min_video_bitrate=100000,
+        two_pass=True,
+        filename_suffix='copy'):
     """
     Compress video file to max-supported size.
 
@@ -44,11 +45,11 @@ def compress_video(
         # Target total bitrate, in bps.
         target_total_bitrate = (size_upper_bound * 1024 * 8) / (1.073741824 * duration)
         if target_total_bitrate < total_bitrate_lower_bound:
-            print('Bitrate is extremely low! Stop compress!')
-            return False
+            print('Bitrate is extremely low! Setting bitrate to lowest possible.')
+            target_total_bitrate = total_bitrate_lower_bound
 
         # Best min size, in kB.
-        best_min_size = (min_video_bitrate) * (1.073741824 * duration) / (8 * 1024)
+        best_min_size = min_video_bitrate * (1.073741824 * duration) / (8 * 1024)
         if size_upper_bound < best_min_size:
             print('Quality not good! Recommended minimum size:', '{:,}'.format(int(best_min_size)), 'KB.')
             print('Setting upper bound to best minium size...')
@@ -97,11 +98,11 @@ def compress_video(
 
 
 def extract_video_subclip(
-    inputfile: str,
-    start_time: float,
-    end_time: float, 
-    outputfile: str, 
-    logger="bar"):
+        inputfile: str,
+        start_time: float,
+        end_time: float,
+        outputfile: str,
+        logger="bar"):
     """
     Makes a new video file playing video file between two times.
 
