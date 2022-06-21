@@ -2,6 +2,10 @@ import http.client
 import json
 import os
 import urllib.error
+
+from moviepy.video.fx.crop import crop
+from moviepy.video.io.VideoFileClip import VideoFileClip
+
 import video_utilities
 
 import pytube.exceptions
@@ -37,13 +41,17 @@ def download_set(file, classes):
                         .download(output_path=dir_name,
                                   filename=file_name + "_init",
                                   max_retries=10)
-                    video_utilities.extract_video_subclip(os.path.join(dir_name, file_name) + "_init",
-                                                          data['start_time'],
-                                                          data['end_time'],
-                                                          os.path.join(dir_name, file_name) + ".mp4")
-                    os.remove(os.path.join(dir_name, file_name) + "_init")
-                    # video_utilies.compress_video(os.path.join(dir_name, file_name), 10)
                     num_videos += 1
+                    print("Downloaded! Now preprocessing...")
+                    clip = VideoFileClip(os.path.join(dir_name, file_name) + "_init", audio=False). \
+                        subclip(t_start=data['start_time'], t_end=data['end_time'])
+                    crop(clip,
+                         y1=int(clip.h * data['box'][0]),
+                         x1=int(clip.w * data['box'][1]),
+                         y2=int(clip.h * data['box'][2]),
+                         x2=int(clip.w * data['box'][3]))
+                    clip.write_videofile(os.path.join(dir_name, file_name) + ".mp4", codec='libx264')
+                    os.remove(os.path.join(dir_name, file_name)+"_init")
                     print("Done!")
                     complete = True
                 except (pytube.exceptions.VideoPrivate,

@@ -2,8 +2,9 @@ import os
 
 import ffmpeg
 from moviepy.config import FFMPEG_BINARY
-from moviepy.decorators import convert_parameter_to_seconds, convert_path_to_string
+from moviepy.decorators import convert_to_seconds
 from moviepy.tools import subprocess_call
+from moviepy.video.io.VideoFileClip import VideoFileClip
 
 
 def compress_video(
@@ -96,45 +97,3 @@ def compress_video(
         print('You do not have ffmpeg installed!', e)
         print('You can install ffmpeg by reading https://github.com/kkroening/ffmpeg-python/issues/251')
         return False
-
-
-@convert_path_to_string(("inputfile", "outputfile"))
-@convert_parameter_to_seconds(("start_time", "end_time"))
-def extract_video_subclip(
-        inputfile: str,
-        start_time: float,
-        end_time: float,
-        outputfile: str,
-        logger="bar"):
-    """
-    Makes a new video file playing video file between two times.
-
-    Args:
-        inputfile: Path to the file from which the subclip will be extracted.
-        start_time: Moment of the input clip that marks the start of the produced subclip (seconds).
-        end_time: Moment of the input clip that marks the end of the produced subclip (seconds).
-        outputfile: Path to the output file (e.g. "../video_name.mp4").
-    Returns:
-        Saves a subclip of the orginal video at the output location.
-
-    Reference: https://github.com/Zulko/moviepy/blob/master/moviepy/video/io/ffmpeg_tools.py#L27
-    """
-    cmd = [
-        FFMPEG_BINARY,
-        "-y",
-        "-ss",
-        "%0.2f" % start_time,
-        "-i",
-        inputfile,
-        "-t",
-        "%0.2f" % (end_time - start_time),
-        "-map",
-        "0",
-        "-vcodec",
-        "copy",
-        "-acodec",
-        "copy",
-        "-copyts",
-        outputfile,
-    ]
-    subprocess_call(cmd, logger=logger)
