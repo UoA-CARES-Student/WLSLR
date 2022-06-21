@@ -2,6 +2,7 @@ import os
 
 import ffmpeg
 from moviepy.config import FFMPEG_BINARY
+from moviepy.decorators import convert_parameter_to_seconds, convert_path_to_string
 from moviepy.tools import subprocess_call
 
 
@@ -97,6 +98,8 @@ def compress_video(
         return False
 
 
+@convert_path_to_string(("inputfile", "outputfile"))
+@convert_parameter_to_seconds(("start_time", "end_time"))
 def extract_video_subclip(
         inputfile: str,
         start_time: float,
