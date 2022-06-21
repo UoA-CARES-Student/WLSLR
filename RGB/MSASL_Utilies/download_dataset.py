@@ -1,6 +1,12 @@
+import http.client
 import json
 import os
 import urllib.error
+
+from moviepy.video.fx.crop import crop
+from moviepy.video.io.VideoFileClip import VideoFileClip
+
+import video_utilities
 
 import pytube.exceptions
 from pytube import YouTube
@@ -27,14 +33,25 @@ def download_set(file, classes):
                         for file in files:
                             if data['clean_text'] in file:
                                 index += 1
+                    file_name = "{}_{}".format(data['clean_text'], index)
 
                     print("Now downloading {}".format(data['url']))
                     YouTube(data['url']).streams \
                         .get_highest_resolution() \
                         .download(output_path=dir_name,
-                                  filename="{}_{}".format(data['clean_text'], index),
+                                  filename=file_name + "_init",
                                   max_retries=10)
                     num_videos += 1
+                    print("Downloaded! Now preprocessing...")
+                    clip = VideoFileClip(os.path.join(dir_name, file_name) + "_init", audio=False). \
+                        subclip(t_start=data['start_time'], t_end=data['end_time'])
+                    crop(clip,
+                         y1=int(clip.h * data['box'][0]),
+                         x1=int(clip.w * data['box'][1]),
+                         y2=int(clip.h * data['box'][2]),
+                         x2=int(clip.w * data['box'][3]))
+                    clip.write_videofile(os.path.join(dir_name, file_name) + ".mp4", codec='libx264')
+                    os.remove(os.path.join(dir_name, file_name)+"_init")
                     print("Done!")
                     complete = True
                 except (pytube.exceptions.VideoPrivate,
@@ -44,7 +61,7 @@ def download_set(file, classes):
                     complete = True
                     num_videos += 1
                     skipped_videos += 1
-                except urllib.error.URLError:
+                except (urllib.error.URLError, http.client.IncompleteRead):
                     print("Network error. Retrying...")
                     complete = False
                 except pytube.exceptions.MaxRetriesExceeded:
@@ -61,17 +78,17 @@ def download_set(file, classes):
 
 
 if __name__ == '__main__':
-    subsets = [100, 500, 1000]
+    subsets = [100]
 
     for subset in subsets:
-        num_vids = download_set('C:\\git_repos\\WLSLR\\MSASL_download\\MS-ASL\\MSASL_train.json', subset)
+        num_vids = download_set('MS-ASL/MSASL_train.json', subset)
         print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
               .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
 
-        num_vids = download_set('C:\\git_repos\\WLSLR\\MSASL_download\\MS-ASL\\MSASL_test.json', subset)
+        num_vids = download_set('MS-ASL/MSASL_test.json', subset)
         print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
               .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
 
-        num_vids = download_set('C:\\git_repos\\WLSLR\\MSASL_download\\MS-ASL\\MSASL_val.json', subset)
+        num_vids = download_set('MS-ASL/MSASL_val.json', subset)
         print("Complete! {} videos traversed, with {} videos skipped. {} videos downloaded overall."
               .format(num_vids[0], num_vids[1], num_vids[0] - num_vids[1]))
