@@ -145,7 +145,9 @@ class InceptionModule(nn.Module):
 
 
 class InceptionI3d(nn.Module):
-    """Inception-v1 I3D architecture.
+    """
+    Inception-v1 I3D architecture.
+
     The model is introduced in:
         Quo Vadis, Action Recognition? A New Model and the Kinetics Dataset
         Joao Carreira, Andrew Zisserman
@@ -183,7 +185,9 @@ class InceptionI3d(nn.Module):
 
     def __init__(self, num_classes=400, spatial_squeeze=True,
                  final_endpoint='Logits', name='inception_i3d', in_channels=3, dropout_keep_prob=0.5):
-        """Initializes I3D model instance.
+        """
+        Initializes I3D model instance.
+
         Args:
           num_classes: The number of outputs in the logit layer (default 400, which
               matches the Kinetics dataset).
@@ -295,13 +299,12 @@ class InceptionI3d(nn.Module):
                              use_batch_norm=False,
                              use_bias=True,
                              name='logits')
-
         self.build()
-
 
     def replace_logits(self, num_classes):
         self._num_classes = num_classes
-        self.logits = Unit3D(in_channels=384+384+128+128, output_channels=self._num_classes,
+        self.logits = Unit3D(in_channels=384+384+128+128, 
+                             output_channels=self._num_classes,
                              kernel_shape=[1, 1, 1],
                              padding=0,
                              activation_fn=None,
@@ -340,7 +343,6 @@ class InceptionI3d(nn.Module):
             logits = x.squeeze(3).squeeze(3)
         # logits is batch X time X classes, which is what we want to work with
         return logits
-        
 
     def extract_features(self, x):
         for end_point in self.VALID_ENDPOINTS:
