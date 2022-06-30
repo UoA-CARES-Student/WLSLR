@@ -10,9 +10,13 @@ import torch
 import torch.utils.data as data_utl
 from torchvision import transforms
 
+import wlasl_dataset_utilities as wdu
+import msasl_dataset_utilities as mdu
+
 # Datasets that are compatible with this nslt_dataset construction
 WLASL_DATASET = 'wlasl'
-MSASL100_DATASET = 'msasl'
+MSASL_DATASET = 'msasl'
+
 
 def video_to_tensor(pic):
     """Convert a ``numpy.ndarray`` to tensor.
@@ -93,95 +97,50 @@ def load_flow_frames(image_dir, vid, start, num):
     return np.asarray(frames, dtype=np.float32)
 
 
-def make_dataset(split_file: str, split: str, root_dir: str, mode: str,
-                 num_classes: int) -> list:
-    dataset = []
-    with open(split_file, 'r') as f:
-        data = json.load(f)
-
-    i = 0
-    count_skipping = 0
-    for vid in data.keys():
-        if split == 'train':
-            if data[vid]['subset'] not in ['train', 'val']:
-                continue
-        else:
-            if data[vid]['subset'] != 'test':
-                continue
-
-        vid_root = root_dir['word']
-        src = 0
-
-        video_path = os.path.join(vid_root, vid + '.mp4')
-        if not os.path.exists(video_path):
-            continue
-
-        num_frames = int(
-            cv2.VideoCapture(video_path).get(cv2.CAP_PROP_FRAME_COUNT))
-
-        if mode == 'flow':
-            num_frames = num_frames // 2
-
-        if num_frames - 0 < 9:
-            print("Skip video ", vid)
-            count_skipping += 1
-            continue
-
-        label = np.zeros((num_classes, num_frames), np.float32)
-
-        for i in range(num_frames):
-            c_ = data[vid]['action'][0]
-            label[c_][i] = 1
-
-        if len(vid) == 5:
-            dataset.append((vid, label, src, 0, data[vid]['action'][2] - data[vid]['action'][1]))
-        elif len(vid) == 6:  # sign kws instances
-            dataset.append((vid, label, src, data[vid]['action'][1], data[vid]['action'][2] - data[vid]['action'][1]))
-
-        i += 1
-    print("Skipped videos: ", count_skipping)
-    print(len(dataset))
-    return dataset
-
-
-def get_num_class(split_file: str, dataset_type: str) -> None:
-    """
-    Args:
-        split_file: ...
-        dataset_type: ...
-    """
-    classes = set()
-    with open(split_file, 'r') as f:
-        content = json.load(f)
+def make_dataset(split_file: str, dataset_type: str, split: str,
+                 root_dir: str, mode: str, num_classes: int) -> list:
 
     if dataset_type == WLASL_DATASET:
-        for vid in content.keys():
-            class_id = content[vid]['action'][0]
-            classes.add(class_id)
-        return len(classes)
+        return wdu.wlasl_make_dataset(
+            split_file=split_file,
+            split=split,
+            root_dir=root_dir,
+            mode=mode,
+            num_classes=num_classes)
 
-    elif dataset_type == MSASL100_DATASET:
-        for data in content:
-            if data['label'] < 100:
-                classes.add(data['label'])
-        return len(classes)
+    elif dataset_type == MSASL_DATASET:
+        return mdu.msasl_make_dataset(
+            split_file=split_file,
+            split=split,
+            root_dir=root_dir,
+            mode=mode,
+            num_classes=num_classes)
+
+
+def get_num_class(split_file: str, dataset_type: str, root_dir: str) -> int:
+
+    if dataset_type == WLASL_DATASET:
+        return wdu.wlasl_num_class(split_file=split_file)
+
+    elif dataset_type == MSASL_DATASET:
+        return mdu.msasl_num_class(root_dir=root_dir)
 
 
 class NSLT(data_utl.Dataset):
     """
     Attributes:
-        split_file: ...
-        dataset_type: ...
-        split: ...
-        root_dir: ...
-        mode: ...
-        transforms: ...
+        split_file: Json file containing the labeling of the videos
+        dataset_type: Indicates what dataset is being used [wlasl, msasl]
+        split: Determines the split of the dataset [train, val, test]
+        root_dir: Path to the location of the videos
+        mode: Indicates what mode this dataset will be used for [rgb, flow]
+        transforms: [Optional] Transforms to be used on the videos
     """
     def __init__(self, dataset_type: str, split_file: str,
                  split: str, root_dir: str, mode: str,
                  transforms: transforms.Compose = None) -> None:
-        self.dataset_type = dataset_type
         self.split_file = split_file
+        self.dataset_type = dataset_type
         self.split = split
         self.root_dir = root_dir
         self.mode = mode
@@ -189,13 +148,14 @@ class NSLT(data_utl.Dataset):
 
         self.num_classes = get_num_class(
             split_file=split_file,
-            dataset_type=dataset_type)
+            dataset_type=dataset_type,
+            root_dir=root_dir)
         self.data = make_dataset(
-            split_file,
-            split,
-            root_dir,
-            mode,
-            self.num_classes)
+            split_file=split_file,
+            split=split,
+            root_dir=root_dir,
+            mode=mode,
+            num_classes=self.num_classes)
 
     def __getitem__(self, index):
         """
