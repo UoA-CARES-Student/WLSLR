@@ -8,13 +8,17 @@ import cv2
 import numpy as np
 import torch
 import torch.utils.data as data_utl
+from torchvision import transforms
 
+# Datasets that are compatible with this nslt_dataset construction
+WLASL_DATASET = 'wlasl'
+MSASL100_DATASET = 'msasl'
 
 def video_to_tensor(pic):
     """Convert a ``numpy.ndarray`` to tensor.
     Converts a numpy.ndarray (T x H x W x C)
     to a torch.FloatTensor of shape (C x T x H x W)
-    
+
     Args:
          pic (numpy.ndarray): Video to be converted to tensor.
     Returns:
@@ -89,7 +93,8 @@ def load_flow_frames(image_dir, vid, start, num):
     return np.asarray(frames, dtype=np.float32)
 
 
-def make_dataset(split_file, split, root, mode, num_classes):
+def make_dataset(split_file: str, split: str, root_dir: str, mode: str,
+                 num_classes: int) -> list:
     dataset = []
     with open(split_file, 'r') as f:
         data = json.load(f)
@@ -104,14 +109,15 @@ def make_dataset(split_file, split, root, mode, num_classes):
             if data[vid]['subset'] != 'test':
                 continue
 
-        vid_root = root['word']
+        vid_root = root_dir['word']
         src = 0
 
         video_path = os.path.join(vid_root, vid + '.mp4')
         if not os.path.exists(video_path):
             continue
 
-        num_frames = int(cv2.VideoCapture(video_path).get(cv2.CAP_PROP_FRAME_COUNT))
+        num_frames = int(
+            cv2.VideoCapture(video_path).get(cv2.CAP_PROP_FRAME_COUNT))
 
         if mode == 'flow':
             num_frames = num_frames // 2
@@ -123,13 +129,13 @@ def make_dataset(split_file, split, root, mode, num_classes):
 
         label = np.zeros((num_classes, num_frames), np.float32)
 
-        for l in range(num_frames):
+        for i in range(num_frames):
             c_ = data[vid]['action'][0]
-            label[c_][l] = 1
+            label[c_][i] = 1
 
         if len(vid) == 5:
             dataset.append((vid, label, src, 0, data[vid]['action'][2] - data[vid]['action'][1]))
-        elif len(vid) == 6:  ## sign kws instances
+        elif len(vid) == 6:  # sign kws instances
             dataset.append((vid, label, src, data[vid]['action'][1], data[vid]['action'][2] - data[vid]['action'][1]))
 
         i += 1
@@ -138,28 +144,58 @@ def make_dataset(split_file, split, root, mode, num_classes):
     return dataset
 
 
-def get_num_class(split_file):
+def get_num_class(split_file: str, dataset_type: str) -> None:
+    """
+    Args:
+        split_file: ...
+        dataset_type: ...
+    """
     classes = set()
+    with open(split_file, 'r') as f:
+        content = json.load(f)
 
-    content = json.load(open(split_file))
+    if dataset_type == WLASL_DATASET:
+        for vid in content.keys():
+            class_id = content[vid]['action'][0]
+            classes.add(class_id)
+        return len(classes)
 
-    for vid in content.keys():
-        class_id = content[vid]['action'][0]
-        classes.add(class_id)
-
-    return len(classes)
+    elif dataset_type == MSASL100_DATASET:
+        for data in content:
+            if data['label'] < 100:
+                classes.add(data['label'])
+        return len(classes)
 
 
 class NSLT(data_utl.Dataset):
-
-    def __init__(self, split_file, split, root, mode, transforms=None):
-        self.num_classes = get_num_class(split_file)
-
-        self.data = make_dataset(split_file, split, root, mode, num_classes=self.num_classes)
+    """
+    Attributes:
+        split_file: ...
+        dataset_type: ...
+        split: ...
+        root_dir: ...
+        mode: ...
+        transforms: ...
+    """
+    def __init__(self, dataset_type: str, split_file: str,
+                 split: str, root_dir: str, mode: str,
+                 transforms: transforms.Compose = None) -> None:
+        self.dataset_type = dataset_type
         self.split_file = split_file
-        self.transforms = transforms
+        self.split = split
+        self.root_dir = root_dir
         self.mode = mode
-        self.root = root
+        self.transforms = transforms
+
+        self.num_classes = get_num_class(
+            split_file=split_file,
+            dataset_type=dataset_type)
+        self.data = make_dataset(
+            split_file,
+            split,
+            root_dir,
+            mode,
+            self.num_classes)
 
     def __getitem__(self, index):
         """
@@ -178,7 +214,7 @@ class NSLT(data_utl.Dataset):
         except ValueError:
             start_f = start_frame
 
-        imgs = load_rgb_frames_from_video(self.root['word'], vid, start_f, total_frames)
+        imgs = load_rgb_frames_from_video(self.root_dir['word'], vid, start_f, total_frames)
 
         imgs, label = self.pad(imgs, label, total_frames)
 
