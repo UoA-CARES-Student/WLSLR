@@ -31,9 +31,11 @@ def download_set(file, classes):
                     index = 0
                     for root, _dir, files in os.walk(dir_name):
                         for file in files:
-                            if data['clean_text'] in file:
+                            if "{:04d}".format(data['label']) == file[0:4]:
                                 index += 1
-                    file_name = "{}_{}".format(data['clean_text'], index)
+                    print("Now downloading {}, number {}".format(data['clean_text'], index))
+                    file_name = "{:04d}{:03d}".format(data['label'], index)
+                    print(file_name)
 
                     print("Now downloading {}".format(data['url']))
                     YouTube(data['url']).streams \
