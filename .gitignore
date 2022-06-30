@@ -6,3 +6,6 @@
 
 # ignore log files
 *.log
+
+# byte-compiled/dll files
+__pycache__/
