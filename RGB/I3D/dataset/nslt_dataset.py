@@ -1,8 +1,6 @@
-import json
 import math
 import os
 import os.path
-import random
 
 import cv2
 import numpy as np
@@ -116,13 +114,14 @@ def make_dataset(split_file: str, dataset_type: str, split: str,
             num_classes=num_classes)
 
 
-def get_num_class(split_file: str, dataset_type: str, root_dir: str) -> int:
+def get_num_class(split_file: str, dataset_type: str,
+                  split: str, root_dir: str) -> int:
 
     if dataset_type == WLASL_DATASET:
         return wdu.wlasl_num_class(split_file=split_file)
 
     elif dataset_type == MSASL_DATASET:
-        return mdu.msasl_num_class(root_dir=root_dir)
+        return mdu.msasl_num_class(root_dir=root_dir, split=split)
 
 
 class NSLT(data_utl.Dataset):
@@ -148,6 +147,7 @@ class NSLT(data_utl.Dataset):
         self.num_classes = get_num_class(
             split_file=split_file,
             dataset_type=dataset_type,
+            split=split,
             root_dir=root_dir)
         self.data = make_dataset(
             split_file=split_file,

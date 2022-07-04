@@ -17,7 +17,7 @@ from configs import Config
 from pytorch_i3d import InceptionI3d
 
 # from datasets.nslt_dataset import NSLT as Dataset
-from datasets.nslt_dataset import NSLT as Dataset
+from dataset.nslt_dataset import NSLT as Dataset
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'

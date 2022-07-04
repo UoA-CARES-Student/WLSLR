@@ -1,6 +1,7 @@
 import pathlib
 
 import cv2
+import numpy as np
 
 
 def msasl_num_class(root_dir: str, split: str) -> int:
@@ -32,15 +33,6 @@ def msasl_make_dataset(split: str, root_dir: str, mode: str,
     for vid in path_root_dir.iterdir():
         vid_name = vid.name
 
-        vid_label = vid_name[:3]
-
-        if int(vid_label) > num_classes:
-            raise RuntimeError(
-                f"'{vid_label}' is in the subset range of {num_classes}")
-
-        src = 0
-        starting_frame = 0
-
         num_frames = int(cv2.VideoCapture(vid).get(cv2.CAP_PROP_FRAME_COUNT))
 
         if mode == 'flow':
@@ -50,6 +42,19 @@ def msasl_make_dataset(split: str, root_dir: str, mode: str,
             print("Skip video ", vid)
             count_skipping += 1
             continue
+
+        if int() > num_classes:
+            raise RuntimeError(
+                f"'{vid_name[:3]}' is in the subset range of {num_classes}")
+
+        vid_label = np.zeros((num_classes, num_frames), np.float32)
+
+        for i in range(num_frames):
+            c_ = vid_name[:3]
+            vid_label[c_][i] = 1
+
+        src = 0
+        starting_frame = 0
 
         dataset.append((vid_name, vid_label, src, starting_frame, num_frames))
 
