@@ -110,7 +110,6 @@ def make_dataset(split_file: str, dataset_type: str, split: str,
 
     elif dataset_type == MSASL_DATASET:
         return mdu.msasl_make_dataset(
-            split_file=split_file,
             split=split,
             root_dir=root_dir,
             mode=mode,
@@ -169,12 +168,7 @@ class NSLT(data_utl.Dataset):
 
         total_frames = 64
 
-        try:
-            start_f = random.randint(0, nf - total_frames - 1) + start_frame
-        except ValueError:
-            start_f = start_frame
-
-        imgs = load_rgb_frames_from_video(self.root_dir['word'], vid, start_f, total_frames)
+        imgs = load_rgb_frames_from_video(self.root_dir['word'], vid, start_frame, total_frames)
 
         imgs, label = self.pad(imgs, label, total_frames)
 
