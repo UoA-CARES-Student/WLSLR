@@ -127,8 +127,8 @@ def get_num_class(split_file: str, dataset_type: str,
 class NSLT(data_utl.Dataset):
     """
     Attributes:
-        split_file: Json file containing the labeling of the videos
         dataset_type: Indicates what dataset is being used [wlasl, msasl]
+        split_file: Json file containing the labeling of the videos
         split: Determines the split of the dataset [train, val, test]
         root_dir: Path to the location of the videos
         mode: Indicates what mode this dataset will be used for [rgb, flow]
@@ -137,8 +137,8 @@ class NSLT(data_utl.Dataset):
     def __init__(self, dataset_type: str, split_file: str,
                  split: str, root_dir: str, mode: str,
                  transforms: transforms.Compose = None) -> None:
-        self.split_file = split_file
         self.dataset_type = dataset_type
+        self.split_file = split_file
         self.split = split
         self.root_dir = root_dir
         self.mode = mode
