@@ -8,8 +8,8 @@ import torch
 import torch.utils.data as data_utl
 from torchvision import transforms
 
-import wlasl_dataset_utilities as wdu
-import msasl_dataset_utilities as mdu
+import dataset.wlasl_dataset_utilities as wdu
+import dataset.msasl_dataset_utilities as mdu
 
 # Datasets that are compatible with this nslt_dataset construction
 WLASL_DATASET = 'wlasl'
