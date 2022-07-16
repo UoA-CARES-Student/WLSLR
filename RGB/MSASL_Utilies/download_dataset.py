@@ -20,11 +20,12 @@ def download_set(file, classes):
 
     num_videos = 0
     skipped_videos = 0
+    num_retries = 3;
 
     f = open(file)
     dataset = json.load(f)
     for data in dataset:
-        if data['label'] < int(classes):
+        if data['label'] == 689:
             complete = False
             while not complete:
                 try:
@@ -40,7 +41,8 @@ def download_set(file, classes):
                         .get_highest_resolution() \
                         .download(output_path=dir_name,
                                   filename=file_name + "_init",
-                                  max_retries=10)
+                                  max_retries=10,
+                                  timeout=600)
                     num_videos += 1
                     print("Downloaded! Now preprocessing...")
                     clip = VideoFileClip(os.path.join(dir_name, file_name) + "_init", audio=False). \
@@ -63,7 +65,13 @@ def download_set(file, classes):
                     skipped_videos += 1
                 except (urllib.error.URLError, http.client.IncompleteRead):
                     print("Network error. Retrying...")
-                    complete = False
+                    num_retries -= 1
+                    if num_retries > 0:
+                        complete = False
+                    else:
+                        complete = True
+                        print('Unknown error. Skipping...')
+                        num_retries = 3
                 except pytube.exceptions.MaxRetriesExceeded:
                     print('Max retries exceeded. Skipping...')
                     complete = True
@@ -78,7 +86,7 @@ def download_set(file, classes):
 
 
 if __name__ == '__main__':
-    subsets = [100]
+    subsets = [1000]
 
     for subset in subsets:
         num_vids = download_set('MS-ASL/MSASL_train.json', subset)
