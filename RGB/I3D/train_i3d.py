@@ -42,7 +42,7 @@ def train_i3d(
 ) -> None:
     if split_file == None and dataset_type == nslt_dataset.WLASL_DATASET:
         raise RuntimeError("No split file was provided when using the WLASL dataset.")
-    
+
     print("CUDA is avaliable: ", torch.cuda.is_available())
 
     # Create Config from the config file
@@ -103,7 +103,7 @@ def train_i3d(
         print('loading weights {}'.format(weights))
         i3d.load_state_dict(torch.load(weights))
 
-    #i3d.cuda()
+    i3d.cuda()
     i3d = nn.DataParallel(i3d)
 
     lr = configs.init_lr
@@ -149,9 +149,9 @@ def train_i3d(
                 inputs, labels, vid = data
 
                 # wrap them in Variable
-                #inputs = inputs.cuda()
+                inputs = inputs.cuda()
                 t = inputs.size(2)
-                #labels = labels.cuda()
+                labels = labels.cuda()
 
                 per_frame_logits = i3d(inputs, pretrained=False)
                 # upsample to input size
