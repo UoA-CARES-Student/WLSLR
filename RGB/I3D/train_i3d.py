@@ -1,6 +1,7 @@
+import argparse
+import pathlib
 import sys
 import os
-import argparse
 
 import torch
 import torch.nn as nn
@@ -19,6 +20,7 @@ from pytorch_i3d import InceptionI3d
 from dataset import nslt_dataset
 from dataset.nslt_dataset import NSLT as Dataset
 
+WLSLR_GIT_PATH = os.environ["WLSLR_GIT_PATH"]
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
@@ -27,7 +29,6 @@ np.random.seed(0)
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
-
 
 def train_i3d(
     dataset_type: str,
@@ -42,6 +43,8 @@ def train_i3d(
     if split_file == None and dataset_type == nslt_dataset.WLASL_DATASET:
         raise RuntimeError("No split file was provided when using the WLASL dataset.")
     
+    print("CUDA is avaliable: ", torch.cuda.is_available())
+
     # Create Config from the config file
     configs = Config(config_file)
 
@@ -50,6 +53,7 @@ def train_i3d(
                                            videotransforms.RandomHorizontalFlip(), ])
     test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
 
+    # Training dataset
     dataset = Dataset(
         dataset_type=dataset_type,
         split_file=split_file,
@@ -64,9 +68,20 @@ def train_i3d(
         num_workers=0,
         pin_memory=True)
 
-    val_dataset = Dataset(train_split, 'test', root, mode, test_transforms)
-    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=configs.batch_size, shuffle=True, num_workers=2,
-                                                 pin_memory=False)
+    # Testing dataset
+    val_dataset = Dataset(
+        dataset_type=dataset_type,
+        split_file=split_file,
+        split='test',
+        root_dir=root_dir,
+        mode=mode,
+        transforms=test_transforms)
+    val_dataloader = torch.utils.data.DataLoader(
+        val_dataset,
+        batch_size=configs.batch_size,
+        shuffle=True,
+        num_workers=2,
+        pin_memory=False)
 
     dataloaders = {'train': dataloader, 'test': val_dataloader}
     datasets = {'train': dataset, 'test': val_dataset}
@@ -74,10 +89,12 @@ def train_i3d(
     # setup the model
     if mode == 'flow':
         i3d = InceptionI3d(400, in_channels=2)
-        i3d.load_state_dict(torch.load('weights/flow_imagenet.pt'))
+        weight_path = pathlib.Path(WLSLR_GIT_PATH, "RGB", "I3D", "weights", "flow_imagenet.pt")
+        i3d.load_state_dict(torch.load(weight_path))
     else:
         i3d = InceptionI3d(400, in_channels=3)
-        i3d.load_state_dict(torch.load('weights/rgb_imagenet.pt'))
+        weight_path = pathlib.Path(WLSLR_GIT_PATH, "RGB", "I3D", "weights", "rgb_imagenet.pt")
+        i3d.load_state_dict(torch.load(weight_path))
 
     num_classes = dataset.num_classes
     i3d.replace_logits(num_classes)
@@ -86,7 +103,7 @@ def train_i3d(
         print('loading weights {}'.format(weights))
         i3d.load_state_dict(torch.load(weights))
 
-    i3d.cuda()
+    #i3d.cuda()
     i3d = nn.DataParallel(i3d)
 
     lr = configs.init_lr
@@ -120,7 +137,7 @@ def train_i3d(
             num_iter = 0
             optimizer.zero_grad()
 
-            confusion_matrix = np.zeros((num_classes, num_classes), dtype=np.int)
+            confusion_matrix = np.zeros((num_classes, num_classes), dtype=int)
             # Iterate over data.
             for data in dataloaders[phase]:
                 num_iter += 1
@@ -132,13 +149,13 @@ def train_i3d(
                 inputs, labels, vid = data
 
                 # wrap them in Variable
-                inputs = inputs.cuda()
+                #inputs = inputs.cuda()
                 t = inputs.size(2)
-                labels = labels.cuda()
+                #labels = labels.cuda()
 
                 per_frame_logits = i3d(inputs, pretrained=False)
                 # upsample to input size
-                per_frame_logits = F.upsample(per_frame_logits, t, mode='linear')
+                per_frame_logits = F.interpolate(per_frame_logits, t, mode='linear')
 
                 # compute localization loss
                 loc_loss = F.binary_cross_entropy_with_logits(per_frame_logits, labels)

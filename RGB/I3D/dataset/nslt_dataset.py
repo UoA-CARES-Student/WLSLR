@@ -1,6 +1,7 @@
 import math
 import os
 import os.path
+import pathlib
 
 import cv2
 import numpy as np
@@ -48,7 +49,6 @@ def load_rgb_frames(image_dir, vid, start, num):
 
 def load_rgb_frames_from_video(vid_root, vid, start, num, resize=(256, 256)):
     video_path = os.path.join(vid_root, vid + '.mp4')
-
     vidcap = cv2.VideoCapture(video_path)
 
     frames = []
@@ -58,7 +58,6 @@ def load_rgb_frames_from_video(vid_root, vid, start, num, resize=(256, 256)):
     vidcap.set(cv2.CAP_PROP_POS_FRAMES, start)
     for offset in range(min(num, int(total_frames - start))):
         success, img = vidcap.read()
-
         w, h, c = img.shape
         if w < 226 or h < 226:
             d = 226. - min(w, h)
@@ -168,8 +167,13 @@ class NSLT(data_utl.Dataset):
         vid, label, src, start_frame, nf = self.data[index]
 
         total_frames = 64
-
-        imgs = load_rgb_frames_from_video(self.root_dir['word'], vid, start_frame, total_frames)
+        if self.dataset_type == WLASL_DATASET:
+            imgs = load_rgb_frames_from_video(self.root_dir['word'], vid, start_frame, total_frames)
+        
+        elif self.dataset_type == MSASL_DATASET:
+            vid_root = pathlib.Path(self.root_dir, self.split)
+            vid_name = pathlib.Path(vid).stem
+            imgs = load_rgb_frames_from_video(str(vid_root), vid_name, start_frame, total_frames)
 
         imgs, label = self.pad(imgs, label, total_frames)
 
