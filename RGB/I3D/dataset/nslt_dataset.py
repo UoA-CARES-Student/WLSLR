@@ -151,6 +151,7 @@ class NSLT(data_utl.Dataset):
             root_dir=root_dir)
         self.data = make_dataset(
             split_file=split_file,
+            dataset_type=dataset_type,
             split=split,
             root_dir=root_dir,
             mode=mode,

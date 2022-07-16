@@ -32,7 +32,7 @@ torch.backends.cudnn.benchmark = False
 def train_i3d(
     dataset_type: str,
     root_dir: str,
-    config: str,
+    config_file: str,
     save_dir: str,
     mode: str,
     train_split: str,
@@ -41,6 +41,9 @@ def train_i3d(
 ) -> None:
     if split_file == None and dataset_type == nslt_dataset.WLASL_DATASET:
         raise RuntimeError("No split file was provided when using the WLASL dataset.")
+    
+    # Create Config from the config file
+    configs = Config(config_file)
 
     # setup dataset
     train_transforms = transforms.Compose([videotransforms.RandomCrop(224),
@@ -56,7 +59,7 @@ def train_i3d(
         transforms=train_transforms)
     dataloader = torch.utils.data.DataLoader(
         dataset,
-        batch_size=Config.batch_size,
+        batch_size=configs.batch_size,
         shuffle=True,
         num_workers=0,
         pin_memory=True)
@@ -207,7 +210,7 @@ def train_i3d_cli(argv) -> None:
     parser.add_argument(
         'dataset_type',
         help='Indicates which dataset is being used [wlasl, msasl]',
-        choices=['wlasl, msasl'],
+        choices=['wlasl', 'msasl'],
         type=str)
 
     parser.add_argument(
@@ -216,7 +219,7 @@ def train_i3d_cli(argv) -> None:
         type=str)
 
     parser.add_argument(
-        'config',
+        'config_file',
         help='Path to the config file',
         type=str)
 
@@ -251,7 +254,7 @@ def train_i3d_cli(argv) -> None:
     train_i3d(
         dataset_type=args.dataset_type,
         root_dir=args.root_dir,
-        config=args.config,
+        config_file=args.config_file,
         save_dir=args.save_dir,
         mode=args.mode,
         train_split=args.train_split,
