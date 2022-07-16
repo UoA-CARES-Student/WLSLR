@@ -28,7 +28,6 @@ def msasl_make_dataset(split: str, root_dir: str, mode: str,
     dataset = []
 
     path_root_dir = pathlib.Path(root_dir, split)
-    print(path_root_dir)
 
     count_skipping = 0
     for vid in path_root_dir.iterdir():
