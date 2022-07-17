@@ -36,7 +36,6 @@ def train_i3d(
     config_file: str,
     save_dir: str,
     mode: str,
-    train_split: str,
     split_file: str = None,
     weights: str = None
 ) -> None:
@@ -257,11 +256,6 @@ def train_i3d_cli(argv) -> None:
         type=str)
 
     parser.add_argument(
-        '--train-split',
-        help='Path to split file for the WLASL dataset',
-        type=str)
-
-    parser.add_argument(
         '--split-file',
         help='Path to the split file if training with the wlasl dataset',
         type=str)
@@ -279,7 +273,6 @@ def train_i3d_cli(argv) -> None:
         config_file=args.config_file,
         save_dir=args.save_dir,
         mode=args.mode,
-        train_split=args.train_split,
         split_file=args.split_file,
         weights=args.weights)
 
