@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 import ffmpeg
 from moviepy.config import FFMPEG_BINARY
@@ -97,3 +98,22 @@ def compress_video(
         print('You do not have ffmpeg installed!', e)
         print('You can install ffmpeg by reading https://github.com/kkroening/ffmpeg-python/issues/251')
         return False
+
+
+def remove_init_videos(dataset_path: str) -> None:
+    """
+    Removes all the init videos that are in the given directory,
+    init videos contain "_init" at the end of their filenames.
+    """
+    dataset_dir = pathlib.Path(dataset_path)
+
+    for file in dataset_dir.iterdir():
+        if "_init" in file.stem:
+            print(f"{file} is an init video, it is being removed.")
+            os.remove(file)
+
+
+if __name__ == "__main__":
+    remove_init_videos("/home/myuser1/MS-ASL-100/train")
+    remove_init_videos("/home/myuser1/MS-ASL-100/val")
+    remove_init_videos("/home/myuser1/MS-ASL-100/test")
