@@ -174,7 +174,6 @@ class NSLT(data_utl.Dataset):
             vid_root = pathlib.Path(self.root_dir, self.split)
             vid_name = pathlib.Path(vid).stem
             imgs = load_rgb_frames_from_video(str(vid_root), vid_name, start_frame, total_frames)
-            print("#############", vid_root, vid_name, imgs)
 
         if imgs.size == 0:
             print("#############", vid_root, vid_name, imgs)
