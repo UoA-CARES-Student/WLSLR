@@ -115,6 +115,11 @@ def train_i3d(
     epoch = 0
 
     best_val_score = 0
+
+    # Create save directory for trained models
+    _save_dir = pathlib.Path(save_dir)
+    _save_dir.mkdir(exist_ok=True)
+
     # train it
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.3)
     while steps < configs.max_steps and epoch < 400:  # for epoch in range(num_epochs):
@@ -186,30 +191,30 @@ def train_i3d(
                     # lr_sched.step()
                     if steps % 10 == 0:
                         acc = float(np.trace(confusion_matrix)) / np.sum(confusion_matrix)
-                        print(
-                            'Epoch {} {} Loc Loss: {:.4f} Cls Loss: {:.4f} Tot Loss: {:.4f} Accu :{:.4f}'.format(epoch,
-                                                                                                                 phase,
-                                                                                                                 tot_loc_loss / (10 * num_steps_per_update),
-                                                                                                                 tot_cls_loss / (10 * num_steps_per_update),
-                                                                                                                 tot_loss / 10,
-                                                                                                                 acc))
+                        print('Epoch {} {} Loc Loss: {:.4f} Cls Loss: {:.4f} Tot Loss: {:.4f} Accu :{:.4f}'.format(
+                            epoch,
+                            phase,
+                            tot_loc_loss / (10 * num_steps_per_update),
+                            tot_cls_loss / (10 * num_steps_per_update),
+                            tot_loss / 10,
+                            acc))
                         tot_loss = tot_loc_loss = tot_cls_loss = 0.
             if phase == 'test':
                 val_score = float(np.trace(confusion_matrix)) / np.sum(confusion_matrix)
                 if val_score > best_val_score or epoch % 2 == 0:
                     best_val_score = val_score
-                    model_name = save_dir + "nslt_" + str(num_classes) + "_" + str(steps).zfill(
-                                   6) + '_%3f.pt' % val_score
+                    model_name = _save_dir.joinpath("nslt_", str(num_classes), "_", 
+                                 str(steps).zfill(6), '_%3f.pt' % val_score)
 
                     torch.save(i3d.module.state_dict(), model_name)
                     print(model_name)
 
-                print('VALIDATION: {} Loc Loss: {:.4f} Cls Loss: {:.4f} Tot Loss: {:.4f} Accu :{:.4f}'.format(phase,
-                                                                                                              tot_loc_loss / num_iter,
-                                                                                                              tot_cls_loss / num_iter,
-                                                                                                              (tot_loss * num_steps_per_update) / num_iter,
-                                                                                                              val_score
-                                                                                                              ))
+                print('VALIDATION: {} Loc Loss: {:.4f} Cls Loss: {:.4f} Tot Loss: {:.4f} Accu :{:.4f}'.format(
+                    phase,
+                    tot_loc_loss / num_iter,
+                    tot_cls_loss / num_iter,
+                    (tot_loss * num_steps_per_update) / num_iter,
+                    val_score))
 
                 scheduler.step(tot_loss * num_steps_per_update / num_iter)
 
