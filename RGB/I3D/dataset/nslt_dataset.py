@@ -169,11 +169,16 @@ class NSLT(data_utl.Dataset):
         total_frames = 64
         if self.dataset_type == WLASL_DATASET:
             imgs = load_rgb_frames_from_video(self.root_dir['word'], vid, start_frame, total_frames)
-        
+
         elif self.dataset_type == MSASL_DATASET:
             vid_root = pathlib.Path(self.root_dir, self.split)
             vid_name = pathlib.Path(vid).stem
             imgs = load_rgb_frames_from_video(str(vid_root), vid_name, start_frame, total_frames)
+            print("#############", vid_root, vid_name, imgs)
+
+        if imgs.size == 0:
+            print("#############", vid_root, vid_name, imgs)
+            raise ValueError()
 
         imgs, label = self.pad(imgs, label, total_frames)
 
