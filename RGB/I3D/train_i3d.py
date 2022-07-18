@@ -52,16 +52,14 @@ def train_i3d(
     #train_transforms = transforms.Compose([videotransforms.RandomCrop(224),
     #                                       videotransforms.RandomHorizontalFlip()])
     #test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
-    train_transforms = transforms.Compose([transforms.ToTensor(),
-                                           transforms.RandomCrop(224),
+    train_transforms = transforms.Compose([transforms.RandomCrop(224),
                                            transforms.RandomHorizontalFlip(),
                                            transforms.RandomRotation(15),
                                            transforms.RandomPrespective(),
                                            transforms.ColorJitter(0.5, 0.5, 0.5, 0.3),
-                                           transforms.ToPILImage()])
-    test_transforms = transforms.Compose([transforms.ToTensor(),
-                                          transforms.CenterCrop(224),
-                                          transforms.ToPILImage()])
+                                           transforms.ToTensor()])
+    test_transforms = transforms.Compose([transforms.CenterCrop(224),
+                                          transforms.ToTensor()])
 
     # Training dataset
     dataset = Dataset(
