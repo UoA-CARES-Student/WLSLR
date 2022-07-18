@@ -53,10 +53,6 @@ def msasl_make_dataset(split: str, root_dir: str, mode: str,
             c_ = int(vid_name[:4])
             vid_label[c_][i] = 1
 
-        #with np.printoptions(threshold=np.inf):
-        #    print(vid_label)
-        #break
-
         src = 0
         starting_frame = 0
 

@@ -176,7 +176,7 @@ class NSLT(data_utl.Dataset):
             imgs = load_rgb_frames_from_video(str(vid_root), vid_name, start_frame, total_frames)
 
         if imgs.size == 0:
-            print("#############", vid_root, vid_name, imgs)
+            print(vid_root, vid_name, imgs)
             raise ValueError()
 
         imgs, label = self.pad(imgs, label, total_frames)
