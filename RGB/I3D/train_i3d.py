@@ -57,9 +57,9 @@ def train_i3d(
                                            transforms.RandomRotation(15),
                                            transforms.RandomPrespective(),
                                            transforms.ColorJitter(0.5, 0.5, 0.5, 0.3),
-                                           transforms.ToTensor()])
+                                           transforms.ToPILImage()])
     test_transforms = transforms.Compose([transforms.CenterCrop(224),
-                                          transforms.ToTensor()])
+                                          transforms.ToPILImage()])
 
     # Training dataset
     dataset = Dataset(
