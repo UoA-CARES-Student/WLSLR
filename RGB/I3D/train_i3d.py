@@ -55,7 +55,7 @@ def train_i3d(
     train_transforms = transforms.Compose([transforms.RandomCrop(224),
                                            transforms.RandomHorizontalFlip(),
                                            transforms.RandomRotation(15),
-                                           transforms.RandomPrespective(),
+                                           transforms.RandomPerspective(),
                                            transforms.ColorJitter(0.5, 0.5, 0.5, 0.3),
                                            transforms.ToTensor()])
     test_transforms = transforms.Compose([transforms.CenterCrop(224),
