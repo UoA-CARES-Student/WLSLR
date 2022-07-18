@@ -1,3 +1,4 @@
+from distutils import extension
 import os
 import pathlib
 
@@ -114,6 +115,4 @@ def remove_init_videos(dataset_path: str) -> None:
 
 
 if __name__ == "__main__":
-    remove_init_videos("/home/myuser1/MS-ASL-100/train")
-    remove_init_videos("/home/myuser1/MS-ASL-100/val")
-    remove_init_videos("/home/myuser1/MS-ASL-100/test")
+    pass

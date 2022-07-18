@@ -48,8 +48,9 @@ def train_i3d(
     configs = Config(config_file)
 
     # setup dataset
+    # TODO: Add additional transform: random_rotation, random_prespective, gussaian_blur, color_jitter
     train_transforms = transforms.Compose([videotransforms.RandomCrop(224),
-                                           videotransforms.RandomHorizontalFlip(), ])
+                                           videotransforms.RandomHorizontalFlip()])
     test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
 
     # Training dataset
@@ -83,16 +84,17 @@ def train_i3d(
         pin_memory=False)
 
     dataloaders = {'train': dataloader, 'test': val_dataloader}
-    datasets = {'train': dataset, 'test': val_dataset}
 
     # setup the model
     if mode == 'flow':
         i3d = InceptionI3d(400, in_channels=2)
-        weight_path = pathlib.Path(WLSLR_GIT_PATH, "RGB", "I3D", "weights", "flow_imagenet.pt")
+        weight_path = pathlib.Path(
+            WLSLR_GIT_PATH, "RGB", "I3D", "weights", "flow_imagenet.pt")
         i3d.load_state_dict(torch.load(weight_path))
     else:
         i3d = InceptionI3d(400, in_channels=3)
-        weight_path = pathlib.Path(WLSLR_GIT_PATH, "RGB", "I3D", "weights", "rgb_imagenet.pt")
+        weight_path = pathlib.Path(
+            WLSLR_GIT_PATH, "RGB", "I3D", "weights", "rgb_imagenet.pt")
         i3d.load_state_dict(torch.load(weight_path))
 
     num_classes = dataset.num_classes
@@ -198,6 +200,7 @@ def train_i3d(
                             tot_loss / 10,
                             acc))
                         tot_loss = tot_loc_loss = tot_cls_loss = 0.
+            
             if phase == 'test':
                 val_score = float(np.trace(confusion_matrix)) / np.sum(confusion_matrix)
                 if val_score > best_val_score or epoch % 2 == 0:
