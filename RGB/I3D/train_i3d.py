@@ -56,12 +56,10 @@ def train_i3d(
                                            transforms.RandomHorizontalFlip(),
                                            transforms.RandomRotation(15),
                                            transforms.RandomPerspective(),
-                                           transforms.ColorJitter(0.5, 0.5, 0.5, 0.3),
-                                           transforms.ToPILImage())
+                                           transforms.ColorJitter(0.5, 0.5, 0.5, 0.3))
     scripted_train_transforms = torch.jit.script(train_transforms)
 
-    test_transforms = torch.nn.Sequential(transforms.CenterCrop(224),
-                                          transforms.ToPILImage())
+    test_transforms = torch.nn.Sequential(transforms.CenterCrop(224))
     scripted_test_transforms = torch.jit.script(test_transforms)
 
     # Training dataset
