@@ -55,7 +55,7 @@ def train_i3d(
     train_transforms = torch.nn.Sequential(transforms.RandomCrop(224),
                                            transforms.RandomHorizontalFlip(),
                                            transforms.RandomRotation(15),
-                                           transforms.RandomPrespective(),
+                                           transforms.RandomPerspective(),
                                            transforms.ColorJitter(0.5, 0.5, 0.5, 0.3),
                                            transforms.ToPILImage())
     scripted_train_transforms = torch.jit.script(train_transforms)
