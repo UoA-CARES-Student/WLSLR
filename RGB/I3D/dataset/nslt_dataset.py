@@ -182,6 +182,8 @@ class NSLT(data_utl.Dataset):
         imgs, label = self.pad(imgs, label, total_frames)
 
         imgs = self.transforms(imgs)
+        np_to_pil = transforms.ToPILImage()
+        imgs = np_to_pil(imgs)
 
         ret_lab = torch.from_numpy(label)
         ret_img = video_to_tensor(imgs)
