@@ -52,14 +52,17 @@ def train_i3d(
     #train_transforms = transforms.Compose([videotransforms.RandomCrop(224),
     #                                       videotransforms.RandomHorizontalFlip()])
     #test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
-    train_transforms = transforms.Compose([transforms.RandomCrop(224),
+    train_transforms = torch.nn.Sequential(transforms.RandomCrop(224),
                                            transforms.RandomHorizontalFlip(),
                                            transforms.RandomRotation(15),
                                            transforms.RandomPrespective(),
                                            transforms.ColorJitter(0.5, 0.5, 0.5, 0.3),
-                                           transforms.ToPILImage()])
-    test_transforms = transforms.Compose([transforms.CenterCrop(224),
-                                          transforms.ToPILImage()])
+                                           transforms.ToPILImage())
+    scripted_train_transforms = torch.jit.script(train_transforms)
+
+    test_transforms = torch.nn.Sequential(transforms.CenterCrop(224),
+                                          transforms.ToPILImage())
+    scripted_test_transforms = torch.jit.script(test_transforms)
 
     # Training dataset
     dataset = Dataset(
@@ -68,7 +71,7 @@ def train_i3d(
         split='train',
         root_dir=root_dir,
         mode=mode,
-        transforms=train_transforms)
+        transforms=scripted_train_transforms)
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=configs.batch_size,
@@ -83,7 +86,7 @@ def train_i3d(
         split='test',
         root_dir=root_dir,
         mode=mode,
-        transforms=test_transforms)
+        transforms=scripted_test_transforms)
     val_dataloader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=configs.batch_size,

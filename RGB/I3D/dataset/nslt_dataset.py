@@ -135,7 +135,7 @@ class NSLT(data_utl.Dataset):
     """
     def __init__(self, dataset_type: str, split_file: str,
                  split: str, root_dir: str, mode: str,
-                 transforms: transforms.Compose = None) -> None:
+                 transforms = None) -> None:
         self.dataset_type = dataset_type
         self.split_file = split_file
         self.split = split
