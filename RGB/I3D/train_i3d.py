@@ -30,6 +30,7 @@ np.random.seed(0)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
+
 def train_i3d(
     dataset_type: str,
     root_dir: str,
@@ -39,7 +40,7 @@ def train_i3d(
     split_file: str = None,
     weights: str = None
 ) -> None:
-    if split_file == None and dataset_type == nslt_dataset.WLASL_DATASET:
+    if split_file is None and dataset_type == nslt_dataset.WLASL_DATASET:
         raise RuntimeError("No split file was provided when using the WLASL dataset.")
 
     print("CUDA is avaliable: ", torch.cuda.is_available())
@@ -209,12 +210,12 @@ def train_i3d(
                             tot_loss / 10,
                             acc))
                         tot_loss = tot_loc_loss = tot_cls_loss = 0.
-            
+
             if phase == 'test':
                 val_score = float(np.trace(confusion_matrix)) / np.sum(confusion_matrix)
                 if val_score > best_val_score or epoch % 2 == 0:
                     best_val_score = val_score
-                    model_name = _save_dir.joinpath("nslt_", str(num_classes), "_", 
+                    model_name = _save_dir.joinpath("nslt_", str(num_classes), "_",
                                  str(steps).zfill(6), '_%3f.pt' % val_score)
 
                     torch.save(i3d.module.state_dict(), model_name)
