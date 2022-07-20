@@ -108,13 +108,13 @@ def run(split_file, pose_data_root, configs, save_model_to=None):
 
 
 if __name__ == "__main__":
-    root = '/media/anudisk/github/WLASL'
+    root = '/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL2000'
 
     subset = 'asl100'
 
     split_file = os.path.join(root, 'data/splits/{}.json'.format(subset))
     pose_data_root = os.path.join(root, 'data/pose_per_individual_videos')
-    config_file = os.path.join(root, 'code/TGCN/configs/{}.ini'.format(subset))
+    config_file = os.path.join(root, '../TGCN/configs/{}.ini'.format(subset))
     configs = Config(config_file)
 
     logging.basicConfig(filename='output/{}.log'.format(os.path.basename(config_file)[:-4]), level=logging.DEBUG, filemode='w+')
