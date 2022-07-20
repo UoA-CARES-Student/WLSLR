@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from torchvision import transforms
-import videotransforms
+import video_transforms
 
 import numpy as np
 
@@ -50,9 +50,9 @@ def train_i3d(
 
     # setup dataset
     # TODO: Add additional transform: random_rotation, random_prespective, gussaian_blur, color_jitter
-    #train_transforms = transforms.Compose([videotransforms.RandomCrop(224),
-    #                                       videotransforms.RandomHorizontalFlip()])
-    #test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
+    #train_transforms = transforms.Compose([video_transforms.RandomCrop(224),
+    #                                       video_transforms.RandomHorizontalFlip()])
+    #test_transforms = transforms.Compose([video_transforms.CenterCrop(224)])
     train_transforms = torch.nn.Sequential(transforms.RandomCrop(224),
                                            transforms.RandomHorizontalFlip(),
                                            transforms.RandomRotation(15),

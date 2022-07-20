@@ -35,7 +35,7 @@ class RandomCrop(object):
         return i, j, th, tw
 
     def __call__(self, imgs):
-        
+
         i, j, h, w = self.get_params(imgs, self.size)
 
         imgs = imgs[:, i:i+h, j:j+w, :]

@@ -1,12 +1,7 @@
-from distutils import extension
 import os
 import pathlib
 
 import ffmpeg
-from moviepy.config import FFMPEG_BINARY
-from moviepy.decorators import convert_to_seconds
-from moviepy.tools import subprocess_call
-from moviepy.video.io.VideoFileClip import VideoFileClip
 
 
 def compress_video(
@@ -31,7 +26,7 @@ def compress_video(
     Return:
         output file name if compression successfully or False if unsuccessful.
     Side-effects:
-        Creates a compressed copy of the video file and then deletes the orginal.
+        Creates a compressed copy of the video file and then deletes orginal.
 
     Reference: https://gist.github.com/ESWZY/a420a308d3118f21274a0bc3a6feb1ff
     """
