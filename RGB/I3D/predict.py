@@ -30,7 +30,7 @@ def predict_single_video(
         num=int(total_frames))
 
     # Padding
-    padded_imgs = nslt_dataset.pad(
+    padded_imgs, _ = nslt_dataset.pad(
         imgs=imgs,
         label=None,
         total_frames=total_frames)
