@@ -15,8 +15,8 @@ from dataset import nslt_dataset
 from dataset.nslt_dataset import NSLT as Dataset
 
 WLSLR_GIT_PATH = os.environ["WLSLR_GIT_PATH"]
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_DEVICE_ORDER"] = ""
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 
 def get_best_model(trained_models_dir: str) -> str:
@@ -30,12 +30,13 @@ def get_best_model(trained_models_dir: str) -> str:
 
     best_model_path = ''
     best_model_accuracy = 0
-    for model in models_dir.iterdir():
-        if model.is_file() and model.suffix == '.pt':
-            model_accuracy = float(model.stem.split('_')[-1])
-            if model_accuracy > best_model_accuracy:
-                best_model_accuracy = model_accuracy
-                best_model_path = model
+    best_model_path = ".\RGB\I3D\\archived\\asl100\FINAL_nslt_100_iters=896_top1=65.89_top5=84.11_top10=89.92.pt"
+    # for model in models_dir.iterdir():
+    #     if model.is_file() and model.suffix == '.pt':
+    #         model_accuracy = float(model.stem.split('_')[-1])
+    #         if model_accuracy > best_model_accuracy:
+    #             best_model_accuracy = model_accuracy
+    #             best_model_path = model
     
     return best_model_path
 
@@ -75,17 +76,17 @@ def test_i3d(
         i3d = InceptionI3d(400, in_channels=2)
         weight_path = pathlib.Path(
             WLSLR_GIT_PATH, "RGB", "I3D", "weights", "flow_imagenet.pt")
-        i3d.load_state_dict(torch.load(weight_path))
+        i3d.load_state_dict(torch.load(weight_path, map_location=torch.device('cpu')))
     else:
         i3d = InceptionI3d(400, in_channels=3)
         weight_path = pathlib.Path(
             WLSLR_GIT_PATH, "RGB", "I3D", "weights", "rgb_imagenet.pt")
-        i3d.load_state_dict(torch.load(weight_path))
+        i3d.load_state_dict(torch.load(weight_path, map_location=torch.device('cpu')))
 
     i3d.replace_logits(val_dataset.num_classes)
     trained_model = get_best_model(trained_models_dir=trained_models_dir)
-    i3d.load_state_dict(torch.load(trained_model))
-    i3d.cuda()
+    i3d.load_state_dict(torch.load(trained_model, map_location=torch.device('cpu')))
+    # i3d.cuda()
     i3d = nn.DataParallel(i3d)
     i3d.eval()
 
@@ -114,6 +115,8 @@ def test_i3d(
         out_probs = np.sort(predictions.cpu().detach().numpy()[0])
         
         data_class_num = labels[0].nonzero()[0][0].item()
+        print("Actual class: {}".format(data_class_num))
+        print("Predicted class: {}".format(torch.argmax(predictions[0]).item()))
 
         # Top-5 accuracy
         if data_class_num in out_labels[-5:]:
