@@ -7,7 +7,6 @@ import cv2
 import numpy as np
 import torch
 import torch.utils.data as data_utl
-from torchvision import transforms
 
 import dataset.wlasl_dataset_utilities as wdu
 import dataset.msasl_dataset_utilities as mdu
@@ -135,7 +134,8 @@ class NSLT(data_utl.Dataset):
     """
     def __init__(self, dataset_type: str, split_file: str,
                  split: str, root_dir: str, mode: str,
-                 transforms = None) -> None:
+                 num_classes=None,
+                 transforms=None) -> None:
         self.dataset_type = dataset_type
         self.split_file = split_file
         self.split = split
@@ -143,11 +143,15 @@ class NSLT(data_utl.Dataset):
         self.mode = mode
         self.transforms = transforms
 
-        self.num_classes = get_num_class(
-            split_file=split_file,
-            dataset_type=dataset_type,
-            split=split,
-            root_dir=root_dir)
+        if num_classes is None:
+            self.num_classes = get_num_class(
+                split_file=split_file,
+                dataset_type=dataset_type,
+                split=split,
+                root_dir=root_dir)
+        else:
+            self.num_classes = num_classes
+
         self.data = make_dataset(
             split_file=split_file,
             dataset_type=dataset_type,
