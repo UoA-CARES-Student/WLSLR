@@ -1,3 +1,4 @@
+import queue
 import cv2
 import pathlib
 import numpy as np
@@ -7,19 +8,13 @@ import torch.nn as nn
 from pytorch_i3d import InceptionI3d
 from torchvision import transforms
 
-# import skvideo
-# skvideo.setFFmpegPath("C:/Users/isabe/Downloads/ffmpeg-5.0.1-full_build-shared/bin")
-# import skvideo.io
-
+import json
 import videotransforms
-
 import dataset.nslt_dataset as nslt_dataset
 
+class_glosses = json.load(open("C:/Users/isabe/Documents/UoA/Sem 1 2022/P4P/WLSLR/RGB/MSASL_Utilies/MS-ASL/MSASL_classes.json"))
 
-def predict_single_video(
-    vid_path: str,
-    trained_model: str = "C:/Users/isabe/Documents/UoA/Sem 1 2022/P4P/WLSLR/RGB/data/models/nslt_100_031372_0.645594.pt"
-) -> None:
+def predict_from_mp4(vid_path: str, pred: queue.Queue,) -> None:
     vid_path = pathlib.Path(vid_path)
     vidcap = cv2.VideoCapture(str(vid_path))
     total_frames = vidcap.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -28,12 +23,19 @@ def predict_single_video(
         vid=str(vid_path.stem),
         start=int(0),
         num=int(total_frames))
+    predict_from_array(imgs=imgs, pred=pred)
+    
 
+def predict_from_array(
+    imgs: np.ndarray,
+    pred: queue.Queue,
+    trained_model: str = "C:/Users/isabe/Documents/UoA/Sem 1 2022/P4P/WLSLR/RGB/data/models/nslt_100_031372_0.645594.pt"
+):
     # Padding
     padded_imgs, _ = nslt_dataset.pad(
         imgs=imgs,
         label=None,
-        total_frames=total_frames)
+        total_frames=imgs.shape[0])
 
     # Transforms
     test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
@@ -51,15 +53,19 @@ def predict_single_video(
     model.eval()
 
     with torch.no_grad():
-        output = model(inputs)
+        output = model(inputs.float())
 
         prediction = torch.max(output, dim=2)[0]
         print(prediction[0])
-        print("Prediction: ", torch.argmax(prediction[0]).item())
+        # print("Prediction: ", torch.argmax(prediction[0]).item())
+        print("Prediction:", class_glosses[torch.argmax(prediction[0]).item()])
 
         probs = nn.functional.softmax(prediction, dim=1)
-        print("Confidence: {}".format(torch.topk(probs, 5)))
+        print("Confidence: {}".format(torch.max(probs)))
+
+    pred.put( (class_glosses[torch.argmax(prediction[0]).item()], torch.max(probs)) )
+   
 
 
 if __name__ == "__main__":
-    predict_single_video('C:/Users/isabe/Documents/UoA/Sem 1 2022/P4P/WLSLR/RGB/data/test/nosign0.mp4')
+    predict_from_mp4('C:/Users/isabe/Documents/UoA/Sem 1 2022/P4P/WLSLR/RGB/data/MS-ASL-100/val/0032003.mp4')
