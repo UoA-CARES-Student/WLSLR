@@ -60,7 +60,7 @@ def test_i3d(
     val_dataset = Dataset(
         dataset_type=dataset_type,
         split_file=split_file,
-        split='val',
+        split='test',
         root_dir=root_dir,
         mode=mode,
         transforms=test_transforms)
