@@ -30,20 +30,10 @@ def predict_single_video(
         num=int(total_frames))
 
     # Padding
-    if imgs.shape[0] < total_frames:
-        num_padding = total_frames - imgs.shape[0]
-        if num_padding:
-            prob = np.random.random_sample()
-            if prob > 0.5:
-                pad_img = imgs[0]
-                pad = np.tile(np.expand_dims(pad_img, axis=0), (num_padding, 1, 1, 1))
-                padded_imgs = np.concatenate([imgs, pad], axis=0)
-            else:
-                pad_img = imgs[-1]
-                pad = np.tile(np.expand_dims(pad_img, axis=0), (num_padding, 1, 1, 1))
-                padded_imgs = np.concatenate([imgs, pad], axis=0)
-    else:
-        padded_imgs = imgs
+    padded_imgs = nslt_dataset.pad(
+        imgs=imgs,
+        label=None,
+        total_frames=total_frames)
 
     # Transforms
     test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
