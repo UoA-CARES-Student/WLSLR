@@ -48,7 +48,7 @@ def msasl_make_dataset(split: str, root_dir: str, mode: str,
                 f"'{vid_name[:4]}' is in the subset range of {num_classes}")
 
         vid_label = np.zeros((num_classes, num_frames), np.float32)
-        
+
         for i in range(num_frames):
             c_ = int(vid_name[:4])
             vid_label[c_][i] = 1
@@ -58,7 +58,7 @@ def msasl_make_dataset(split: str, root_dir: str, mode: str,
 
         dataset.append((vid_name, vid_label, src, starting_frame, num_frames))
 
-    print("Skipped videos: ", count_skipping)
-    print(len(dataset))
+    #print("Skipped videos: ", count_skipping)
+    #print(len(dataset))
 
     return dataset

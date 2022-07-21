@@ -105,6 +105,7 @@ def test_i3d(
     print(correct_vids)
     print(correct, "/", count)
 
+
 def test_i3d_cli(argv) -> None:
     """
     Used to test a i3d model using a video dataset.
@@ -112,7 +113,6 @@ def test_i3d_cli(argv) -> None:
     Args:
         Check the cli help command -h for more description on the args.
     """
-
     parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument(
