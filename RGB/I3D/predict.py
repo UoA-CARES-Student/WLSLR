@@ -18,7 +18,7 @@ import dataset.nslt_dataset as nslt_dataset
 
 def predict_single_video(
     vid_path: str,
-    trained_model: str = "/home/myuser1/msasl_i3d_saved_models/nslt_100_031372_0.645594.pt"
+    trained_model: str = "C:/Users/isabe/Documents/UoA/Sem 1 2022/P4P/WLSLR/RGB/data/models/nslt_100_031372_0.645594.pt"
 ) -> None:
     vid_path = pathlib.Path(vid_path)
     vidcap = cv2.VideoCapture(str(vid_path))
@@ -57,6 +57,9 @@ def predict_single_video(
         print(prediction[0])
         print("Prediction: ", torch.argmax(prediction[0]).item())
 
+        probs = nn.functional.softmax(prediction, dim=1)
+        print("Confidence: {}".format(torch.topk(probs, 5)))
+
 
 if __name__ == "__main__":
-    predict_single_video('/home/myuser1/WLSLR/RGB/data/test/0006005.mp4')
+    predict_single_video('C:/Users/isabe/Documents/UoA/Sem 1 2022/P4P/WLSLR/RGB/data/test/nosign0.mp4')

@@ -1,3 +1,4 @@
+from cv2 import FONT_HERSHEY_COMPLEX, FONT_HERSHEY_DUPLEX, FONT_HERSHEY_PLAIN, FONT_HERSHEY_SIMPLEX, FONT_HERSHEY_TRIPLEX
 import numpy as np
 import cv2 as cv
 
@@ -19,9 +20,10 @@ while True:
         break
 
     # Our operations on the frame come here
-    # gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    cv.putText(img=frame, text="TEST TEST TEXT", org=(10, 40), fontFace=FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 0, 0))
     # Display the resulting frame
     cv.imshow('frame', frame)
+    
     if cv.waitKey(1) == ord('q'):
         break
 
