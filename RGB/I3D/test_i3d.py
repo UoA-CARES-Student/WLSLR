@@ -22,7 +22,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""
 def get_best_model(trained_models_dir: str) -> str:
     """
     Returns path to the best trained model in a given directory
-    
+
     Args:
         trained_models_dir: Path to directory containing trained i3d models
     """
@@ -30,14 +30,14 @@ def get_best_model(trained_models_dir: str) -> str:
 
     best_model_path = ''
     best_model_accuracy = 0
-    best_model_path = ".\RGB\I3D\\archived\\asl100\FINAL_nslt_100_iters=896_top1=65.89_top5=84.11_top10=89.92.pt"
-    # for model in models_dir.iterdir():
-    #     if model.is_file() and model.suffix == '.pt':
-    #         model_accuracy = float(model.stem.split('_')[-1])
-    #         if model_accuracy > best_model_accuracy:
-    #             best_model_accuracy = model_accuracy
-    #             best_model_path = model
-    
+    #best_model_path = ".\RGB\I3D\\archived\\asl100\FINAL_nslt_100_iters=896_top1=65.89_top5=84.11_top10=89.92.pt"
+    for model in models_dir.iterdir():
+        if model.is_file() and model.suffix == '.pt':
+            model_accuracy = float(model.stem.split('_')[-1])
+            if model_accuracy > best_model_accuracy:
+                best_model_accuracy = model_accuracy
+                best_model_path = model
+
     return best_model_path
 
 
@@ -113,7 +113,7 @@ def test_i3d(
         predictions = torch.max(per_frame_logits, dim=2)[0]
         out_labels = np.argsort(predictions.cpu().detach().numpy()[0])
         out_probs = np.sort(predictions.cpu().detach().numpy()[0])
-        
+
         data_class_num = labels[0].nonzero()[0][0].item()
         print("Actual class: {}".format(data_class_num))
         print("Predicted class: {}".format(torch.argmax(predictions[0]).item()))
@@ -138,8 +138,8 @@ def test_i3d(
             top1_tp[data_class_num] += 1
         else:
             top1_fp[data_class_num] += 1
-        
-        print(video_id, float(correct) / len(val_dataloader), 
+
+        print(video_id, float(correct) / len(val_dataloader),
               float(correct_5) / len(val_dataloader),
               float(correct_10) / len(val_dataloader))
 
