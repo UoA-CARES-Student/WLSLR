@@ -93,6 +93,30 @@ def load_flow_frames(image_dir, vid, start, num):
     return np.asarray(frames, dtype=np.float32)
 
 
+def pad(imgs, label, total_frames):
+    if imgs.shape[0] < total_frames:
+        num_padding = total_frames - imgs.shape[0]
+
+        if num_padding:
+            prob = np.random.random_sample()
+            if prob > 0.5:
+                pad_img = imgs[0]
+                pad = np.tile(np.expand_dims(pad_img, axis=0), (num_padding, 1, 1, 1))
+                padded_imgs = np.concatenate([imgs, pad], axis=0)
+            else:
+                pad_img = imgs[-1]
+                pad = np.tile(np.expand_dims(pad_img, axis=0), (num_padding, 1, 1, 1))
+                padded_imgs = np.concatenate([imgs, pad], axis=0)
+    else:
+        padded_imgs = imgs
+
+    if label is not None:
+        label = label[:, 0]
+        label = np.tile(label, (total_frames, 1)).transpose((1, 0))
+
+    return padded_imgs, label
+
+
 def make_dataset(split_file: str, dataset_type: str, split: str,
                  root_dir: str, mode: str, num_classes: int) -> list:
 
@@ -183,7 +207,7 @@ class NSLT(data_utl.Dataset):
             print(vid_root, vid_name, imgs)
             raise ValueError()
 
-        imgs, label = self.pad(imgs, label, total_frames)
+        imgs, label = pad(imgs, label, total_frames)
 
         imgs = self.transforms(imgs)
 
@@ -194,28 +218,6 @@ class NSLT(data_utl.Dataset):
 
     def __len__(self):
         return len(self.data)
-
-    def pad(self, imgs, label, total_frames):
-        if imgs.shape[0] < total_frames:
-            num_padding = total_frames - imgs.shape[0]
-
-            if num_padding:
-                prob = np.random.random_sample()
-                if prob > 0.5:
-                    pad_img = imgs[0]
-                    pad = np.tile(np.expand_dims(pad_img, axis=0), (num_padding, 1, 1, 1))
-                    padded_imgs = np.concatenate([imgs, pad], axis=0)
-                else:
-                    pad_img = imgs[-1]
-                    pad = np.tile(np.expand_dims(pad_img, axis=0), (num_padding, 1, 1, 1))
-                    padded_imgs = np.concatenate([imgs, pad], axis=0)
-        else:
-            padded_imgs = imgs
-
-        label = label[:, 0]
-        label = np.tile(label, (total_frames, 1)).transpose((1, 0))
-
-        return padded_imgs, label
 
     @staticmethod
     def pad_wrap(imgs, label, total_frames):
