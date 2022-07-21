@@ -15,8 +15,8 @@ from dataset import nslt_dataset
 from dataset.nslt_dataset import NSLT as Dataset
 
 WLSLR_GIT_PATH = os.environ["WLSLR_GIT_PATH"]
-os.environ["CUDA_DEVICE_ORDER"] = ""
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def get_best_model(trained_models_dir: str) -> str:
@@ -48,7 +48,7 @@ def test_i3d(
     mode: str,
     split_file: str = None,
 ) -> None:
-    if split_file == None and dataset_type == nslt_dataset.WLASL_DATASET:
+    if split_file is None and dataset_type == nslt_dataset.WLASL_DATASET:
         raise RuntimeError("No split file was provided when using the WLASL dataset.")
 
     print("CUDA is avaliable: ", torch.cuda.is_available())
@@ -63,7 +63,8 @@ def test_i3d(
         split='test',
         root_dir=root_dir,
         mode=mode,
-        transforms=test_transforms)
+        transforms=test_transforms,
+        num_classes=100)
     val_dataloader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=1,
