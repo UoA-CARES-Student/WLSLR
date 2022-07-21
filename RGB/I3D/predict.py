@@ -1,40 +1,35 @@
-import torch
-import torch.nn as nn
-import numpy as np
-import torchvision
-#import skvideo
-#skvideo.setFFmpegPath("C:/Users/isabe/Downloads/ffmpeg-5.0.1-full_build-shared/bin")
-#import skvideo.io
-import dataset.nslt_dataset as nslt_dataset
-from pytorch_i3d import InceptionI3d
-import videotransforms
-from torchvision import transforms
 import cv2
 import pathlib
+import numpy as np
+
+import torch
+import torch.nn as nn
+from pytorch_i3d import InceptionI3d
+from torchvision import transforms
+
+# import skvideo
+# skvideo.setFFmpegPath("C:/Users/isabe/Downloads/ffmpeg-5.0.1-full_build-shared/bin")
+# import skvideo.io
+
+import videotransforms
+
+import dataset.nslt_dataset as nslt_dataset
 
 
 def predict_single_video(
     vid_path: str,
-    trained_model: str
+    trained_model: str = "/home/myuser1/msasl_i3d_saved_models/nslt_100_031372_0.645594.pt"
 ) -> None:
-    return
-
-if __name__ == "__main__":
-    # setup dataset
-    test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
-
-    vid_path = pathlib.Path('/home/myuser1/WLSLR/RGB/data/test/0006005.mp4')
+    vid_path = pathlib.Path(vid_path)
     vidcap = cv2.VideoCapture(str(vid_path))
     total_frames = vidcap.get(cv2.CAP_PROP_FRAME_COUNT)
-    print(vid_path.parent)
-    print(vid_path.stem)
     imgs = nslt_dataset.load_rgb_frames_from_video(
         vid_root=str(vid_path.parent),
         vid=str(vid_path.stem),
         start=int(0),
         num=int(total_frames))
 
-    # padding
+    # Padding
     if imgs.shape[0] < total_frames:
         num_padding = total_frames - imgs.shape[0]
         if num_padding:
@@ -50,31 +45,28 @@ if __name__ == "__main__":
     else:
         padded_imgs = imgs
 
+    # Transforms
+    test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
     transformed_imgs = test_transforms(padded_imgs)
     inputs = torch.from_numpy(transformed_imgs.transpose([3, 0, 1, 2]))
     inputs.unsqueeze_(0)
-    print(inputs.shape)
 
+    # Create model
     model = InceptionI3d(400, in_channels=3)
-    model.replace_logits(100)
+    model.replace_logits(100)   # Current set to 100 classes
 
-    trained_model = "/home/myuser1/msasl_i3d_saved_models/nslt_100_031372_0.645594.pt"
+    # Load trained weights
     model.load_state_dict(torch.load(trained_model, map_location=torch.device('cpu')))
     model = nn.DataParallel(model)
     model.eval()
 
-    #data = skvideo.io.vread("RGB/data/test/book0.mp4")
-    #data = torch.from_numpy(data.transpose([3, 0, 1, 2]))
-    #data.unsqueeze_(0)
-    #print(data.shape)
-
     with torch.no_grad():
-        #output = model(data.float())
-        # output.to(device=torch.device('cpu'), dtype=float)
         output = model(inputs)
 
         prediction = torch.max(output, dim=2)[0]
-        # out_labels = np.argsort(prediction.cpu().detach().numpy()[0])
         print(prediction[0])
         print("Prediction: ", torch.argmax(prediction[0]).item())
-        print("Actual: ", int(str(vid_path.stem)[:4]))
+
+
+if __name__ == "__main__":
+    predict_single_video('/home/myuser1/WLSLR/RGB/data/test/0006005.mp4')
