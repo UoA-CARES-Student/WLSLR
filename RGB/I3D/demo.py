@@ -45,16 +45,16 @@ while True:
     cv.imshow('frame', frame)
     frames.appendleft(frame)
 
-    if(len(frames) > 60 and active_count()<2):
+    if(len(frames) > 45 and active_count()<2):
         vid_num += 1
         out = cv.VideoWriter(f"test{vid_num}.mp4", fourcc, 20.0, (640,480))
         predict_thread.start()
         frames.clear()
     
-    if(len(frames) <= 60):
+    if(len(frames) <= 45):
         out.write(frame)
 
-    while(len(frames) > 60):
+    while(len(frames) > 45):
         frames.pop()
     
     if cv.waitKey(1) == ord('q'):
