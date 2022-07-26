@@ -50,18 +50,18 @@ def train_i3d(
 
     # setup dataset
     # TODO: Add additional transform: random_rotation, random_prespective, gussaian_blur, color_jitter
-    #train_transforms = transforms.Compose([videotransforms.RandomCrop(224),
-    #                                       videotransforms.RandomHorizontalFlip()])
-    #test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
-    train_transforms = torch.nn.Sequential(transforms.RandomCrop(224),
-                                           transforms.RandomHorizontalFlip(),
-                                           transforms.RandomRotation(15),
-                                           transforms.RandomPerspective(),
-                                           transforms.ColorJitter(0.5, 0.5, 0.5, 0.3))
-    scripted_train_transforms = torch.jit.script(train_transforms)
-
-    test_transforms = torch.nn.Sequential(transforms.CenterCrop(224))
-    scripted_test_transforms = torch.jit.script(test_transforms)
+    train_transforms = transforms.Compose([videotransforms.RandomCrop(224),
+                                           videotransforms.RandomHorizontalFlip()])
+    test_transforms = transforms.Compose([videotransforms.CenterCrop(224)])
+    #train_transforms = torch.nn.Sequential(transforms.RandomCrop(224),
+    #                                       transforms.RandomHorizontalFlip(),
+    #                                       transforms.RandomRotation(15),
+    #                                       transforms.RandomPerspective(),
+    #                                       transforms.ColorJitter(0.5, 0.5, 0.5, 0.3))
+    #scripted_train_transforms = torch.jit.script(train_transforms)
+    #
+    #test_transforms = torch.nn.Sequential(transforms.CenterCrop(224))
+    #scripted_test_transforms = torch.jit.script(test_transforms)
 
     # Training dataset
     dataset = Dataset(
@@ -70,7 +70,7 @@ def train_i3d(
         split='train',
         root_dir=root_dir,
         mode=mode,
-        transforms=scripted_train_transforms)
+        transforms=train_transforms)
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=configs.batch_size,
@@ -85,7 +85,7 @@ def train_i3d(
         split='test',
         root_dir=root_dir,
         mode=mode,
-        transforms=scripted_test_transforms)
+        transforms=test_transforms)
     val_dataloader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=configs.batch_size,
@@ -215,10 +215,10 @@ def train_i3d(
                 val_score = float(np.trace(confusion_matrix)) / np.sum(confusion_matrix)
                 if val_score > best_val_score or epoch % 2 == 0:
                     best_val_score = val_score
-                    model_name = _save_dir.joinpath("nslt_", str(num_classes), "_",
-                                 str(steps).zfill(6), '_%3f.pt' % val_score)
+                    model_name = "nslt_" + str(num_classes) + "_" + str(steps).zfill(6) + ('_%3f.pt' % val_score)
+                    model_save_path = _save_dir.joinpath(model_name)
 
-                    torch.save(i3d.module.state_dict(), model_name)
+                    torch.save(i3d.module.state_dict(), model_save_path)
                     print(model_name)
 
                 print('VALIDATION: {} Loc Loss: {:.4f} Cls Loss: {:.4f} Tot Loss: {:.4f} Accu :{:.4f}'.format(
