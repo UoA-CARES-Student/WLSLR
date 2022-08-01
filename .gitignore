@@ -1,6 +1,7 @@
 # ignore the downloaded raw files
 *MS-ASL-*
 *WLASL2000*
+*WLASL-100*
 
 # ignore idea files
 .idea
