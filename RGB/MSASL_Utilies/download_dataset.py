@@ -47,11 +47,11 @@ def download_set(file, classes):
                     print("Downloaded! Now preprocessing...")
                     clip = VideoFileClip(os.path.join(dir_name, file_name) + "_init", audio=False). \
                         subclip(t_start=data['start_time'], t_end=data['end_time'])
-                    crop(clip,
-                         y1=int(clip.h * data['box'][0]),
-                         x1=int(clip.w * data['box'][1]),
-                         y2=int(clip.h * data['box'][2]),
-                         x2=int(clip.w * data['box'][3]))
+                    # crop(clip,
+                    #      y1=int(clip.h * data['box'][0]),
+                    #      x1=int(clip.w * data['box'][1]),
+                    #      y2=int(clip.h * data['box'][2]),
+                    #      x2=int(clip.w * data['box'][3]))
                     clip.write_videofile(os.path.join(dir_name, file_name) + ".mp4", codec='libx264')
                     os.remove(os.path.join(dir_name, file_name)+"_init")
                     print("Done!")
