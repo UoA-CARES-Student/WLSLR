@@ -20,12 +20,12 @@ def download_set(file, classes):
 
     num_videos = 0
     skipped_videos = 0
-    num_retries = 3;
+    num_retries = 3
 
     f = open(file)
     dataset = json.load(f)
     for data in dataset:
-        if data['label'] == 689:
+        if data['label'] < classes:
             complete = False
             while not complete:
                 try:
