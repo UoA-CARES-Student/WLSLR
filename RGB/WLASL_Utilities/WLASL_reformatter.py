@@ -1,6 +1,7 @@
 import json
 import shutil
 import os
+from pathlib import Path
 
 # The json file to generate the new dataset from.
 WLASL_JSON_FILE = "/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL2000/data/splits/asl100.json"
@@ -51,4 +52,7 @@ def copy_videos():
     f.close()
 
 if __name__ == '__main__':
+    Path(NEW_WLASL_LOCATION+"/train").mkdir(parents=True, exist_ok=True)
+    Path(NEW_WLASL_LOCATION+"/test").mkdir(parents=True, exist_ok=True)
+    Path(NEW_WLASL_LOCATION+"/val").mkdir(parents=True, exist_ok=True)
     copy_videos()
