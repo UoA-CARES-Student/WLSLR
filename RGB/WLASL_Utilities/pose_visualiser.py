@@ -1,5 +1,8 @@
+import json
+
 import cv2
 import mmcv
+import numpy
 from mmpose.apis import (inference_top_down_pose_model, init_pose_model, vis_pose_result, process_mmdet_results)
 from mmdet.apis import inference_detector, init_detector
 
@@ -25,9 +28,9 @@ def predict_and_visualise(model, det_model, input_vid, output_vid):
     size = (input_vid.width, input_vid.height)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     video_writer = cv2.VideoWriter("/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/pose/test_vis_output/" + output_vid,
-                                  fourcc,
-                                  fps,
-                                  size)
+                                   fourcc,
+                                   fps,
+                                   size)
 
     for frame_id, cur_frame in enumerate(mmcv.track_iter_progress(input_vid)):
         # inference detection
@@ -55,6 +58,16 @@ def predict_and_visualise(model, det_model, input_vid, output_vid):
         video_writer.write(vis_result)
 
     video_writer.release()
+    print(pose_results)
+
+    index = 0
+    for _ in pose_results:
+        pose_results[index].update({'bbox': numpy.ndarray.tolist(pose_results[index].get('bbox'))})
+        pose_results[index].update({'keypoints': numpy.ndarray.tolist(pose_results[index].get('keypoints'))})
+        index += 1
+
+    with open("pose_test.json", "w") as outfile:
+        json.dump(pose_results, outfile)
 
 
 if __name__ == "__main__":
@@ -64,7 +77,7 @@ if __name__ == "__main__":
     hand_model = init_pose_model(hand_config, hand_checkpoint)
     hand_det_model = init_detector(hand_det_config, hand_det_checkpoint)
 
-    vid = mmcv.VideoReader("/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL-100/train/0000000.mp4")
+    vid = mmcv.VideoReader("/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL-100/train/0080000.mp4")
 
     predict_and_visualise(pose_model, pose_det_model, vid, "pose_test.mp4")
     predict_and_visualise(hand_model, hand_det_model, vid, "hand_test.mp4")
