@@ -55,10 +55,15 @@ def predict_and_visualise(model, det_model, input_vid, output_vid):
             format='xyxy',
             dataset=model.cfg.data.test.type)
 
+        # get just wholebody prediction
         for _ in pose_results:
             while len(pose_results) > 1:
                 pose_results.pop(1)
 
+        # cull unneeded keypoints:
+        # Keypoints 1 - 13: upper body
+        # Keypoints 92 - 112: right hand
+        # Keypoints 113 - 133: left hand
         index = 1
         for _ in pose_results[0]['keypoints']:
             if 13 < index < 92:
@@ -72,8 +77,10 @@ def predict_and_visualise(model, det_model, input_vid, output_vid):
                 pose_results[index].update({'keypoints': numpy.ndarray.tolist(pose_results[index].get('keypoints'))})
                 index += 1
 
-            with open("pose_test.json", "w") as outfile:
+            with open("data/pose_test.json", "w") as outfile:
                 json.dump(pose_results, outfile)
+
+
 
         # show pose estimation results
         vis_result = vis_pose_result(
