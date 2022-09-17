@@ -28,7 +28,7 @@ def compute_difference(x):
     return diff
 
 
-def read_pose_file(filepath):
+def read_pose_file(filepath, split):
     body_pose_exclude = {}
 
     try:
@@ -41,7 +41,7 @@ def read_pose_file(filepath):
     frame_id = path_parts[1][:11]
     vid = os.path.split(path_parts[0])[-1]
 
-    save_to = os.path.join('/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/TGCN/saved_models', vid)
+    save_to = os.path.join(f'/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL-100/{split}/data/pose_per_individual_videos', vid)
 
     try:
         ft = torch.load(os.path.join(save_to, frame_id + '_ft.pt'))
@@ -85,8 +85,7 @@ def read_pose_file(filepath):
         frame_id = path_parts[1][:11]
         vid = os.path.split(path_parts[0])[-1]
 
-        save_to = os.path.join('/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL2000/data'
-                               '/pose_per_individual_videos', vid)
+        save_to = os.path.join(f'/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL-100/{split}/data/pose_per_individual_videos', vid)
         if not os.path.exists(save_to):
             os.mkdir(save_to)
         torch.save(ft, os.path.join(save_to, frame_id + '_ft.pt'))
@@ -173,7 +172,7 @@ class Sign_Dataset(Dataset):
                                      self.framename.format(str(i).zfill(5)))
 
             # pose = cv2.imread(frame_path, cv2.COLOR_BGR2RGB)
-            pose = read_pose_file(pose_path)
+            pose = read_pose_file(pose_path, split)
 
             if pose is not None:
                 if self.img_transforms:
