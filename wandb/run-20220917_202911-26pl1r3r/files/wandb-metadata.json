@@ -1,0 +1,24 @@
+{
+    "os": "Linux-5.14.0-1046-oem-x86_64-with-glibc2.17",
+    "python": "3.8.13",
+    "heartbeatAt": "2022-09-17T08:29:12.681749",
+    "startedAt": "2022-09-17T08:29:11.976493",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "gpu_count": 1,
+    "cpu_count": 10,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/myuser1/WLSLR/RGB/TGCN/train_tgcn.py",
+    "codePath": "RGB/TGCN/train_tgcn.py",
+    "git": {
+        "remote": "https://github.com/UoA-CARES-Student/WLSLR.git",
+        "commit": "facf62030ebca44bafeb81fa70c3603e451df11c"
+    },
+    "email": "klor742@aucklanduni.ac.nz",
+    "root": "/home/myuser1/WLSLR",
+    "host": "Precision-3640",
+    "username": "myuser1",
+    "executable": "/home/myuser1/miniconda3/envs/WLSLR/bin/python"
+}

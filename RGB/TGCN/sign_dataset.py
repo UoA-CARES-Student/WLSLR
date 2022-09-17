@@ -11,8 +11,8 @@ import utils
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from torch.utils.data import Dataset
 
-WLASL_CLASSES = "/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL_Utilities/WLASL_classes.json"
-MSASL_CLASSES = "/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/MSASL_Utilies/MS-ASL/MSASL_classes.json"
+WLASL_CLASSES = "/home/myuser1/WLSLR/RGB/WLASL_Utilities/WLASL_classes.json"
+MSASL_CLASSES = "/home/myuser1/WLSLR/RGB/MSASL_Utilies/MS-ASL/MSASL_classes.json"
 
 def compute_difference(x):
     diff = []
@@ -41,7 +41,7 @@ def read_pose_file(filepath, split):
     frame_id = path_parts[1][:11]
     vid = os.path.split(path_parts[0])[-1]
 
-    save_to = os.path.join(f'/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL-100/{split}/data/pose_per_individual_videos', vid)
+    save_to = os.path.join(f'/home/myuser1/WLSLR/RGB/WLASL-100/{split}/data/pose_per_individual_videos', vid)
 
     try:
         ft = torch.load(os.path.join(save_to, frame_id + '_ft.pt'))
@@ -85,7 +85,7 @@ def read_pose_file(filepath, split):
         frame_id = path_parts[1][:11]
         vid = os.path.split(path_parts[0])[-1]
 
-        save_to = os.path.join(f'/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL-100/{split}/data/pose_per_individual_videos', vid)
+        save_to = os.path.join(f'/home/myuser1/WLSLR/RGB/WLASL-100/{split}/data/pose_per_individual_videos', vid)
         if not os.path.exists(save_to):
             os.mkdir(save_to)
         torch.save(ft, os.path.join(save_to, frame_id + '_ft.pt'))

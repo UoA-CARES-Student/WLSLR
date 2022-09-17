@@ -16,7 +16,6 @@ from train_utils import train, validation
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
-
 def run(dataset_root, pose_ext, configs, save_model_to=None):
     epochs = configs.max_epochs
     log_interval = configs.log_interval
@@ -104,17 +103,17 @@ def run(dataset_root, pose_ext, configs, save_model_to=None):
             best_epoch_num = epoch
 
             torch.save(model.state_dict(),
-                       os.path.join('/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/TGCN/checkpoints/WLASL-100',
+                       os.path.join('/home/myuser1/WLSLR/RGB/TGCN/checkpoints/WLASL-100',
                                     'gcn_epoch={}_val_acc={}.pth'.format(best_epoch_num, best_test_acc)))
 
     utils.plot_curves()
 
     class_names = train_dataset.label_encoder.classes_
     utils.plot_confusion_matrix(train_gts, train_preds, classes=class_names, normalize=False,
-                                save_to='/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/TGCN/output/wlasl100-train'
+                                save_to='/home/myuser1/WLSLR//RGB/TGCN/output/wlasl100-train'
                                         '-conf-mat')
     utils.plot_confusion_matrix(val_gts, val_preds, classes=class_names, normalize=False,
-                                save_to='/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/TGCN/output/wlasl100-val'
+                                save_to='/home/myuser1/WLSLR//RGB/TGCN/output/wlasl100-val'
                                         '-conf-mat')
 
     wandb.log({"conf_mat": wandb.plot.confusion_matrix(probs=None,
@@ -125,17 +124,17 @@ def run(dataset_root, pose_ext, configs, save_model_to=None):
 if __name__ == "__main__":
     wandb.init(project="wlasl-100-tgcn", entity="p4p_p23")
 
-    root = '/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL-100'
+    root = '/home/myuser1/WLSLR/RGB/WLASL-100'
 
     subset = 'asl100'
 
     # split_file = os.path.join(root, 'data/splits/{}.json'.format(subset))
     pose_ext = os.path.join('data/pose_per_individual_videos')
     config_file = os.path.join(root,
-                               '/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/TGCN/configs/{}.ini'.format(subset))
+                               '/home/myuser1/WLSLR/RGB/TGCN/configs/{}.ini'.format(subset))
     configs = Config(config_file)
 
-    logging.basicConfig(filename='/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/TGCN/output/wlasl100.log',
+    logging.basicConfig(filename='/home/myuser1/WLSLR/RGB/TGCN/output/wlasl100.log',
                         level=logging.DEBUG, filemode='w+')
 
     logging.info('Calling main.run()')
