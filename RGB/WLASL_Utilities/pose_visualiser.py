@@ -3,6 +3,7 @@ import os
 
 import traceback
 import mmcv
+import cv2
 from datetime import datetime
 from mmpose.apis import (inference_top_down_pose_model, init_pose_model, vis_pose_result, process_mmdet_results)
 from mmdet.apis import inference_detector, init_detector
@@ -20,16 +21,16 @@ DATASET_BASE = "/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL-100"
 def predict_and_visualise(model,
                           det_model,
                           input_vid_path,
-                          # output_vid
+                          output_vid
                           ):
     input_vid = mmcv.VideoReader(input_vid_path)
-    # fps = input_vid.fps
-    # size = (input_vid.width, input_vid.height)
-    # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    # video_writer = cv2.VideoWriter("/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/pose/test_vis_output/" + output_vid,
-    #                                fourcc,
-    #                                fps,
-    #                                size)
+    fps = input_vid.fps
+    size = (input_vid.width, input_vid.height)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    video_writer = cv2.VideoWriter("/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/pose/test_vis_output/" + output_vid,
+                                   fourcc,
+                                   fps,
+                                   size)
 
     offset = 0
 
@@ -111,6 +112,20 @@ def predict_and_visualise(model,
 
             with open(f"{path_dir}/image_{frame_num:05}_keypoints.json", "w") as outfile:
                 json.dump(output_json, outfile)
+        else:
+            offset += 1
+
+    #     # show pose estimation results
+    #     vis_result = vis_pose_result(
+    #         model,
+    #         cur_frame,
+    #         pose_results,
+    #         dataset=model.cfg.data.test.type,
+    #         show=False)
+    #     # reduce image size
+    #     video_writer.write(vis_result)
+    #
+    # video_writer.release()
 
         #     # show pose estimation results
         #     vis_result = vis_pose_result(
@@ -124,13 +139,16 @@ def predict_and_visualise(model,
         #
         # video_writer.release()
 
-        else:
-            offset += 1
-
+    else:
+        offset += 1
 
 if __name__ == "__main__":
     wholebody_model = init_pose_model(wholebody_config, wholebody_checkpoint)
     wholebody_det_model = init_detector(wholebody_det_config, wholebody_det_checkpoint)
+
+    # # Visualise single video
+    # predict_and_visualise(wholebody_model, wholebody_det_model,
+    #                       "/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/MS-ASL-100/train/0000009.mp4", "test.mp4")
 
     for split_dir in os.listdir(DATASET_BASE):
         files = os.listdir(os.path.join(DATASET_BASE, split_dir))

@@ -1,19 +1,18 @@
+import glob
 import json
 import math
 import os
 import random
 
-import numpy as np
-
-import cv2
 import torch
-import torch.nn as nn
-
+import pathlib
 import utils
 
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from torch.utils.data import Dataset
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
+WLASL_CLASSES = "/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/WLASL_Utilities/WLASL_classes.json"
+MSASL_CLASSES = "/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/MSASL_Utilies/MS-ASL/MSASL_classes.json"
 
 def compute_difference(x):
     diff = []
@@ -30,10 +29,10 @@ def compute_difference(x):
 
 
 def read_pose_file(filepath):
-    body_pose_exclude = {9, 10, 11, 22, 23, 24, 12, 13, 14, 19, 20, 21}
+    body_pose_exclude = {}
 
     try:
-        content = json.load(open(filepath))["people"][0]
+        content = json.load(open(filepath))
     except IndexError:
         return None
 
@@ -42,7 +41,7 @@ def read_pose_file(filepath):
     frame_id = path_parts[1][:11]
     vid = os.path.split(path_parts[0])[-1]
 
-    save_to = os.path.join('/home/dxli/workspace/nslt/code/Pose-GCN/posegcn/features', vid)
+    save_to = os.path.join('/home/izzy/Documents/UoA/Sem_1_2022/P4P/WLSLR/RGB/TGCN/saved_models', vid)
 
     try:
         ft = torch.load(os.path.join(save_to, frame_id + '_ft.pt'))
@@ -53,7 +52,7 @@ def read_pose_file(filepath):
         return xy
 
     except FileNotFoundError:
-        print(filepath)
+        # print(filepath)
         body_pose = content["pose_keypoints_2d"]
         left_hand_pose = content["hand_left_keypoints_2d"]
         right_hand_pose = content["hand_right_keypoints_2d"]
@@ -102,26 +101,19 @@ def read_pose_file(filepath):
 
 
 class Sign_Dataset(Dataset):
-    def __init__(self, index_file_path, split, pose_root, sample_strategy='rnd_start', num_samples=25, num_copies=4,
+    def __init__(self, split, dataset_root, pose_ext, sample_strategy='rnd_start', num_samples=25, num_copies=4,
                  img_transforms=None, video_transforms=None, test_index_file=None):
-        assert os.path.exists(index_file_path), "Non-existent indexing file path: {}.".format(index_file_path)
-        assert os.path.exists(pose_root), "Path to poses does not exist: {}.".format(pose_root)
-
         self.data = []
         self.label_encoder, self.onehot_encoder = LabelEncoder(), OneHotEncoder(categories='auto')
 
-        if type(split) == 'str':
-            split = [split]
+        self.dataset_root = dataset_root
+        self.pose_ext = pose_ext
 
-        self.test_index_file = test_index_file
-        self._make_dataset(index_file_path, split)
-
-        self.index_file_path = index_file_path
-        self.pose_root = pose_root
         self.framename = 'image_{}_keypoints.json'
         self.sample_strategy = sample_strategy
         self.num_samples = num_samples
-
+        self.test_index_file = test_index_file
+        self._make_dataset(split)
         self.img_transforms = img_transforms
         self.video_transforms = video_transforms
 
@@ -131,9 +123,9 @@ class Sign_Dataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        video_id, gloss_cat, frame_start, frame_end = self.data[index]
+        video_id, gloss_cat, frame_start, frame_end, split = self.data[index]
         # frames of dimensions (T, H, W, C)
-        x = self._load_poses(video_id, frame_start, frame_end, self.sample_strategy, self.num_samples)
+        x = self._load_poses(video_id, frame_start, frame_end, self.sample_strategy, self.num_samples, split)
 
         if self.video_transforms:
             x = self.video_transforms(x)
@@ -142,40 +134,28 @@ class Sign_Dataset(Dataset):
 
         return x, y, video_id
 
-    def _make_dataset(self, index_file_path, split):
-        with open(index_file_path, 'r') as f:
-            content = json.load(f)
+    def _make_dataset(self, splits):
+        classes_data = json.load(open(WLASL_CLASSES))
+        self.label_encoder.fit(classes_data)
+        # self.label_encoder, self.onehot_encoder = LabelEncoder(), OneHotEncoder(categories='auto')
 
-        # create label encoder
-        glosses = sorted([gloss_entry['gloss'] for gloss_entry in content])
+        for split in splits:
+            path_root_dir = pathlib.Path(self.dataset_root, split, self.pose_ext)
 
-        self.label_encoder.fit(glosses)
-        self.onehot_encoder.fit(self.label_encoder.transform(self.label_encoder.classes_).reshape(-1, 1))
+            for datum_dir in path_root_dir.iterdir():
+                gloss_index = int(os.path.basename(datum_dir)[:4]) - 1
+                gloss_label = classes_data[gloss_index]
+                gloss_cat = utils.labels2cat(self.label_encoder, [gloss_label])[0]
 
-        if self.test_index_file is not None:
-            print('Trained on {}, tested on {}'.format(index_file_path, self.test_index_file))
-            with open(self.test_index_file, 'r') as f:
-                content = json.load(f)
-
-        # make dataset
-        for gloss_entry in content:
-            gloss, instances = gloss_entry['gloss'], gloss_entry['instances']
-            gloss_cat = utils.labels2cat(self.label_encoder, [gloss])[0]
-
-            for instance in instances:
-                if instance['split'] not in split:
-                    continue
-
-                frame_end = instance['frame_end']
-                frame_start = instance['frame_start']
-                video_id = instance['video_id']
-
-                instance_entry = video_id, gloss_cat, frame_start, frame_end
+                # name, gloss, start frame, end frame and split
+                instance_entry = datum_dir.name, gloss_cat, 1, len(glob.glob1(str(datum_dir), "*.json")) - 1, split
                 self.data.append(instance_entry)
 
-    def _load_poses(self, video_id, frame_start, frame_end, sample_strategy, num_samples):
-        """ Load frames of a video. Start and end indices are provided just to avoid listing and sorting the directory unnecessarily.
-         """
+    def _load_poses(self, video_id, frame_start, frame_end, sample_strategy, num_samples, split):
+        """
+        Load frames of a video.
+        Start and end indices are provided just to avoid listing and sorting the directory unnecessarily.
+        """
         poses = []
 
         if sample_strategy == 'rnd_start':
@@ -189,7 +169,9 @@ class Sign_Dataset(Dataset):
             raise NotImplementedError('Unimplemented sample strategy found: {}.'.format(sample_strategy))
 
         for i in frames_to_sample:
-            pose_path = os.path.join(self.pose_root, video_id, self.framename.format(str(i).zfill(5)))
+            pose_path = os.path.join(self.dataset_root, split, self.pose_ext, video_id,
+                                     self.framename.format(str(i).zfill(5)))
+
             # pose = cv2.imread(frame_path, cv2.COLOR_BGR2RGB)
             pose = read_pose_file(pose_path)
 
@@ -202,7 +184,8 @@ class Sign_Dataset(Dataset):
                 try:
                     poses.append(poses[-1])
                 except IndexError:
-                    print(pose_path)
+                    pass
+                    # print(pose_path)
 
         pad = None
 
