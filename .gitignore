@@ -11,4 +11,4 @@
 
 # byte-compiled/dll files
 __pycache__/
-/RGB/TGCN/wandb/*
+*wandb/*
