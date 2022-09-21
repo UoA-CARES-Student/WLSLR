@@ -8,8 +8,13 @@ import numpy as np
 import torch
 import torch.utils.data as data_utl
 
+<<<<<<< HEAD
+import wlasl_dataset_utilities as wdu
+import msasl_dataset_utilities as mdu
+=======
 import dataset.wlasl_dataset_utilities as wdu
 import dataset.msasl_dataset_utilities as mdu
+>>>>>>> 5878ef4709a964aea703dcf959be9d5dd33b2363
 
 # Datasets that are compatible with this nslt_dataset construction
 WLASL_DATASET = 'wlasl'
