@@ -134,7 +134,7 @@ class Sign_Dataset(Dataset):
         return x, y, video_id
 
     def _make_dataset(self, splits):
-        classes_data = json.load(open(WLASL_CLASSES))
+        classes_data = json.load(open(WLASL_CLASSES))[0:100]
         self.label_encoder.fit(classes_data)
         # self.label_encoder, self.onehot_encoder = LabelEncoder(), OneHotEncoder(categories='auto')
 
