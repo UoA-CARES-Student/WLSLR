@@ -102,29 +102,35 @@ def run(dataset_root, pose_ext, configs, save_model_to=None):
             best_test_acc = val_score[0]
             best_epoch_num = epoch
 
+            best_train_gts = train_gts
+            best_train_preds = train_preds
+
+            best_val_gts = val_gts
+            best_val_preds = val_preds
+
             torch.save(model.state_dict(),
-                       os.path.join('/home/myuser1/WLSLR/RGB/TGCN/checkpoints/WLASL-100',
+                       os.path.join('/home/myuser1/WLSLR/RGB/TGCN/checkpoints/MSASL-100',
                                     'gcn_epoch={}_val_acc={}.pth'.format(best_epoch_num, best_test_acc)))
 
     utils.plot_curves()
 
     class_names = train_dataset.label_encoder.classes_
-    utils.plot_confusion_matrix(train_gts, train_preds, classes=class_names, normalize=False,
-                                save_to='/home/myuser1/WLSLR//RGB/TGCN/output/wlasl100-train'
+    utils.plot_confusion_matrix(best_train_gts, best_train_preds, classes=class_names, normalize=False,
+                                save_to='/home/myuser1/WLSLR/RGB/TGCN/output/msasl100-train'
                                         '-conf-mat')
-    utils.plot_confusion_matrix(val_gts, val_preds, classes=class_names, normalize=False,
-                                save_to='/home/myuser1/WLSLR//RGB/TGCN/output/wlasl100-val'
+    utils.plot_confusion_matrix(best_val_gts, best_val_preds, classes=class_names, normalize=False,
+                                save_to='/home/myuser1/WLSLR/RGB/TGCN/output/msasl100-val'
                                         '-conf-mat')
 
     wandb.log({"conf_mat": wandb.plot.confusion_matrix(probs=None,
-                                                       y_true=val_gts, preds=val_preds,
+                                                       y_true=best_val_gts, preds=best_val_preds,
                                                        class_names=class_names)})
 
 
 if __name__ == "__main__":
-    wandb.init(project="wlasl-100-tgcn", entity="p4p_p23")
+    wandb.init(project="msasl-100-tgcn", entity="p4p_p23")
 
-    root = '/home/myuser1/WLSLR/RGB/WLASL-100'
+    root = '/home/myuser1/WLSLR/RGB/MSASL-100'
 
     subset = 'asl100'
 
@@ -134,7 +140,7 @@ if __name__ == "__main__":
                                '/home/myuser1/WLSLR/RGB/TGCN/configs/{}.ini'.format(subset))
     configs = Config(config_file)
 
-    logging.basicConfig(filename='/home/myuser1/WLSLR/RGB/TGCN/output/wlasl100.log',
+    logging.basicConfig(filename='/home/myuser1/WLSLR/RGB/TGCN/output/msasl100.log',
                         level=logging.DEBUG, filemode='w+')
 
     logging.info('Calling main.run()')

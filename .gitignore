@@ -1,5 +1,6 @@
 # ignore the downloaded raw files
 *MS-ASL-*
+*MSASL-*
 *WLASL2000*
 *WLASL-100*
 
