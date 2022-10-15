@@ -1,5 +1,7 @@
 # ignore the downloaded raw files
 *MS-ASL-*
+*WLASL2000*
+*WLASL-100*
 
 # ignore idea files
 .idea
@@ -9,3 +11,4 @@
 
 # byte-compiled/dll files
 __pycache__/
+*wandb/*

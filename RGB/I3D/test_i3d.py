@@ -16,7 +16,7 @@ from dataset.nslt_dataset import NSLT as Dataset
 
 WLSLR_GIT_PATH = os.environ["WLSLR_GIT_PATH"]
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def get_best_model(trained_models_dir: str) -> str:
@@ -30,6 +30,7 @@ def get_best_model(trained_models_dir: str) -> str:
 
     best_model_path = ''
     best_model_accuracy = 0
+    #best_model_path = ".\RGB\I3D\\archived\\asl100\FINAL_nslt_100_iters=896_top1=65.89_top5=84.11_top10=89.92.pt"
     for model in models_dir.iterdir():
         if model.is_file() and model.suffix == '.pt':
             model_accuracy = float(model.stem.split('_')[-1])
@@ -59,10 +60,11 @@ def test_i3d(
     val_dataset = Dataset(
         dataset_type=dataset_type,
         split_file=split_file,
-        split='val',
+        split='test',
         root_dir=root_dir,
         mode=mode,
-        transforms=test_transforms)
+        transforms=test_transforms,
+        num_classes=100)
     val_dataloader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=1,
@@ -71,17 +73,7 @@ def test_i3d(
         pin_memory=False)
 
     # setup the model
-    if mode == 'flow':
-        i3d = InceptionI3d(400, in_channels=2)
-        weight_path = pathlib.Path(
-            WLSLR_GIT_PATH, "RGB", "I3D", "weights", "flow_imagenet.pt")
-        i3d.load_state_dict(torch.load(weight_path))
-    else:
-        i3d = InceptionI3d(400, in_channels=3)
-        weight_path = pathlib.Path(
-            WLSLR_GIT_PATH, "RGB", "I3D", "weights", "rgb_imagenet.pt")
-        i3d.load_state_dict(torch.load(weight_path))
-
+    i3d = InceptionI3d(400, in_channels=3)
     i3d.replace_logits(val_dataset.num_classes)
     trained_model = get_best_model(trained_models_dir=trained_models_dir)
     i3d.load_state_dict(torch.load(trained_model))
@@ -89,22 +81,12 @@ def test_i3d(
     i3d = nn.DataParallel(i3d)
     i3d.eval()
 
-    # Set up results containers
     correct = 0
-    correct_5 = 0
-    correct_10 = 0
-
-    top1_fp = np.zeros(val_dataset.num_classes, dtype=int)
-    top1_tp = np.zeros(val_dataset.num_classes, dtype=int)
-
-    top5_fp = np.zeros(val_dataset.num_classes, dtype=int)
-    top5_tp = np.zeros(val_dataset.num_classes, dtype=int)
-
-    top10_fp = np.zeros(val_dataset.num_classes, dtype=int)
-    top10_tp = np.zeros(val_dataset.num_classes, dtype=int)
-
+    count = 0
+    correct_vids = []
     # Test the model with the dataset
     for data in val_dataloader:
+        count = count + 1
         inputs, labels, video_id = data  # inputs: b, c, t, h, w
 
         per_frame_logits = i3d(inputs)
@@ -115,36 +97,13 @@ def test_i3d(
 
         data_class_num = labels[0].nonzero()[0][0].item()
 
-        # Top-5 accuracy
-        if data_class_num in out_labels[-5:]:
-            correct_5 += 1
-            top5_tp[data_class_num] += 1
-        else:
-            top5_fp[data_class_num] += 1
-
-        # Top-10 accuracy
-        if data_class_num in out_labels[-10:]:
-            correct_10 += 1
-            top10_tp[data_class_num] += 1
-        else:
-            top10_fp[data_class_num] += 1
-
         # Top-1 accuracy
         if torch.argmax(predictions[0]).item() == data_class_num:
-            correct += 1
-            top1_tp[data_class_num] += 1
-        else:
-            top1_fp[data_class_num] += 1
+            correct = correct + 1
+            correct_vids.append(video_id)
 
-        print(video_id, float(correct) / len(val_dataloader),
-              float(correct_5) / len(val_dataloader),
-              float(correct_10) / len(val_dataloader))
-
-    # per-class accuracy
-    top1_per_class = np.mean(top1_tp / (top1_tp + top1_fp))
-    top5_per_class = np.mean(top5_tp / (top5_tp + top5_fp))
-    top10_per_class = np.mean(top10_tp / (top10_tp + top10_fp))
-    print('top-k average per class acc: {}, {}, {}'.format(top1_per_class, top5_per_class, top10_per_class))
+    print(correct_vids)
+    print(correct, "/", count)
 
 
 def test_i3d_cli(argv) -> None:
@@ -154,7 +113,6 @@ def test_i3d_cli(argv) -> None:
     Args:
         Check the cli help command -h for more description on the args.
     """
-
     parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument(
