@@ -41,7 +41,7 @@ def read_pose_file(filepath, split):
     frame_id = path_parts[1][:11]
     vid = os.path.split(path_parts[0])[-1]
 
-    save_to = os.path.join(f'/home/myuser1/WLSLR/RGB/WLASL-100/{split}/data/pose_per_individual_videos', vid)
+    save_to = os.path.join(f'/home/myuser1/WLSLR/RGB/MSASL-100/{split}/data/pose_per_individual_videos', vid)
 
     try:
         ft = torch.load(os.path.join(save_to, frame_id + '_ft.pt'))
@@ -85,7 +85,7 @@ def read_pose_file(filepath, split):
         frame_id = path_parts[1][:11]
         vid = os.path.split(path_parts[0])[-1]
 
-        save_to = os.path.join(f'/home/myuser1/WLSLR/RGB/WLASL-100/{split}/data/pose_per_individual_videos', vid)
+        save_to = os.path.join(f'/home/myuser1/WLSLR/RGB/MSASL-100/{split}/data/pose_per_individual_videos', vid)
         if not os.path.exists(save_to):
             os.mkdir(save_to)
         torch.save(ft, os.path.join(save_to, frame_id + '_ft.pt'))
@@ -134,7 +134,7 @@ class Sign_Dataset(Dataset):
         return x, y, video_id
 
     def _make_dataset(self, splits):
-        classes_data = json.load(open(WLASL_CLASSES))[0:100]
+        classes_data = json.load(open(MSASL_CLASSES))[0:100]
         self.label_encoder.fit(classes_data)
         # self.label_encoder, self.onehot_encoder = LabelEncoder(), OneHotEncoder(categories='auto')
 
